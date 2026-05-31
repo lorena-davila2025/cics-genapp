@@ -1,2 +1,15 @@
 base/src/.DS_Store
 base/.DS_Store
+.DS_Store
+
+# local-build generated artifacts
+local-build/src/
+local-build/gen/
+local-build/bin/
+
+# frontend build output and dependencies
+local-build/frontend/dist/
+local-build/frontend/node_modules/
+
+# API dependencies
+local-build/api/node_modules/
