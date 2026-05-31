@@ -1,0 +1,15 @@
+#!/bin/bash
+# Source this before running any compiled GenApp programs:
+#   source env.sh
+
+export PGHOST=localhost
+export PGPORT=5432
+export PGDATABASE=genapp
+export PGUSER=genapp
+export PGPASSWORD=qwerty0512
+export PGOPTIONS='--search_path=genapp'
+
+export COB_LIBRARY_PATH=/Users/gabrielcamps/Documents/Projects/cics-genapp/local-build/bin
+export COB_DYNAMIC_CALLS=YES
+
+echo "GenApp environment set (db=genapp, lib=$(echo $COB_LIBRARY_PATH))"
