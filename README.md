@@ -348,6 +348,12 @@ cics-genapp/
         └── testdb.cbl           # Smoke-test COBOL runner
 ```
 
+<img width="1718" height="896" alt="Screenshot 2026-06-01 at 5 39 45 PM" src="https://github.com/user-attachments/assets/b4d71caa-3195-4fa3-879e-655184ef44d0" />
+
+<img width="1716" height="883" alt="Screenshot 2026-06-01 at 5 39 59 PM" src="https://github.com/user-attachments/assets/e4254f07-42ac-4101-9547-9517e3bcaf4d" />
+
+<img width="1706" height="880" alt="image" src="https://github.com/user-attachments/assets/3774ebd5-590a-4000-b0fa-1d065e30e094" />
+
 ---
 
 ## License
