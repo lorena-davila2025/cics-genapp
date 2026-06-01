@@ -42,15 +42,16 @@ router.get('/', async (req, res) => {
              ORDER BY p.policynumber`,
             params
         );
+        const toDate = v => v ? new Date(v).toISOString().slice(0, 10) : null;
         const TYPE_NAME = { E: 'Endowment', H: 'House', M: 'Motor', C: 'Commercial' };
         res.json(rows.map(r => ({
-            policy_num:    String(r.policynumber).padStart(10, '0'),
-            customer_num:  String(r.customernumber).padStart(10, '0'),
-            policy_type:   TYPE_NAME[r.policytype?.trim()] || r.policytype?.trim(),
+            policy_num:       String(r.policynumber).padStart(10, '0'),
+            customer_num:     String(r.customernumber).padStart(10, '0'),
+            policy_type:      TYPE_NAME[r.policytype?.trim()] || r.policytype?.trim(),
             policy_type_code: r.policytype?.trim(),
-            issue_date:    r.issuedate,
-            expiry_date:   r.expirydate,
-            payment:       String(r.payment ?? ''),
+            issue_date:       toDate(r.issuedate),
+            expiry_date:      toDate(r.expirydate),
+            payment:          String(r.payment ?? ''),
         })));
     } catch (err) {
         res.status(500).json({ error: err.message });

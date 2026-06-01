@@ -25,10 +25,11 @@ router.get('/', async (req, res) => {
              ORDER BY c.claimnumber`,
             params
         );
+        const toDate = v => v ? new Date(v).toISOString().slice(0, 10) : null;
         res.json(rows.map(r => ({
             claim_num:   String(r.claimnumber).padStart(10, '0'),
             policy_num:  String(r.policynumber).padStart(10, '0'),
-            claim_date:  r.claimdate,
+            claim_date:  toDate(r.claimdate),
             cause:       (r.cause || '').trim(),
             value:       String(r.value ?? ''),
         })));

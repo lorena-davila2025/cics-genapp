@@ -28,11 +28,12 @@ router.get('/', async (req, res) => {
              FROM genapp.customer c
              ORDER BY customernumber`
         );
+        const toDate = v => v ? new Date(v).toISOString().slice(0, 10) : null;
         res.json(rows.map(r => ({
             customer_num:  String(r.customernumber).padStart(10, '0'),
             first_name:    r.firstname?.trim(),
             last_name:     r.lastname?.trim(),
-            dob:           r.dateofbirth,
+            dob:           toDate(r.dateofbirth),
             postcode:      r.postcode?.trim(),
             num_policies:  String(r.num_policies),
         })));
