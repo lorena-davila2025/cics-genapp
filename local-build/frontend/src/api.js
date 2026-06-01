@@ -13,12 +13,14 @@ async function request(method, path, body) {
 
 export const api = {
   // Customers
+  listCustomers: () => request('GET', '/customers'),
   getCustomer: (id) => request('GET', `/customers/${id}`),
   createCustomer: (data) => request('POST', '/customers', data),
   updateCustomer: (id, data) => request('PUT', `/customers/${id}`, data),
   deleteCustomer: (id) => request('DELETE', `/customers/${id}`),
 
   // Policies
+  listPolicies: (custNum) => request('GET', `/policies${custNum ? `?cust_num=${custNum}` : ''}`),
   getPolicy: (custId, polNum, polType) =>
     request('GET', `/policies/customer/${custId}?policy_num=${polNum}&policy_type=${polType}`),
   createPolicy: (data) => request('POST', '/policies', data),
@@ -26,6 +28,7 @@ export const api = {
     request('DELETE', `/policies/customer/${custId}/${polNum}?policy_type=${polType}`),
 
   // Claims
+  listClaims: (polNum) => request('GET', `/claims${polNum ? `?policy_num=${polNum}` : ''}`),
   getClaim: (claimNum) => request('GET', `/claims/${claimNum}`),
   createClaim: (data) => request('POST', '/claims', data),
   deleteClaim: (claimNum) => request('DELETE', `/claims/${claimNum}`),

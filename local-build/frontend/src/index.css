@@ -24,24 +24,52 @@ header {
   background: var(--blue);
   color: #fff;
   padding: 0 1.5rem;
-  height: 56px;
+  min-height: 56px;
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: .02em; }
 header .badge { font-size: .75rem; opacity: .75; background: rgba(255,255,255,.15);
   padding: 2px 8px; border-radius: 20px; }
 
-nav { display: flex; gap: .25rem; margin-left: auto; }
+nav {
+  display: flex;
+  gap: .75rem;
+  margin-left: auto;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.nav-group-label {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .7;
+  padding-left: .1rem;
+}
+
+.nav-group-buttons {
+  display: flex;
+  gap: .2rem;
+}
+
 nav button {
   background: transparent;
   border: 1px solid rgba(255,255,255,.4);
   color: #fff;
-  padding: .35rem .9rem;
+  padding: .3rem .75rem;
   border-radius: var(--radius);
   cursor: pointer;
-  font-size: .875rem;
+  font-size: .8rem;
 }
 nav button.active,
 nav button:hover { background: rgba(255,255,255,.2); }

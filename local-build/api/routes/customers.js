@@ -3,6 +3,7 @@
 const express = require('express');
 const router  = express.Router();
 const { runCobol } = require('../utils/cobolRunner');
+const pool = require('../utils/db');
 
 /**
  * Translate a COBOL CA-RETURN-CODE string to an HTTP status code.
@@ -16,6 +17,29 @@ function httpStatus(cobolStatus) {
     if (cobolStatus === '01' || cobolStatus === '02') return 404;
     return 500;
 }
+
+// ─── GET /api/customers  (list all) ───────────────────────────────────────
+router.get('/', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT customernumber, firstname, lastname, dateofbirth, postcode,
+                    (SELECT COUNT(*) FROM genapp.policy p
+                     WHERE p.customernumber = c.customernumber) AS num_policies
+             FROM genapp.customer c
+             ORDER BY customernumber`
+        );
+        res.json(rows.map(r => ({
+            customer_num:  String(r.customernumber).padStart(10, '0'),
+            first_name:    r.firstname?.trim(),
+            last_name:     r.lastname?.trim(),
+            dob:           r.dateofbirth,
+            postcode:      r.postcode?.trim(),
+            num_policies:  String(r.num_policies),
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ─── GET /api/customers/:id ────────────────────────────────────────────────
 router.get('/:id', (req, res) => {

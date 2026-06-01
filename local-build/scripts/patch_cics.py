@@ -436,6 +436,19 @@ def main():
     # Inject stub paragraphs
     result = inject_stubs(result)
 
+    # Fix PADDINGDATA path: in lgapdb01 (Add Policy), the program checks whether
+    # EIBCALEN > WS-REQUIRED-CA-LEN to decide if extra padding data was appended
+    # to the commarea.  In our standalone context EIBCALEN is always 32500 (from
+    # dfheiblk.cpy), so WS-VARY-LEN ends up being ~32000, which causes ocesql to
+    # read far past the 3900-byte WS-VARY-CHAR buffer and send a corrupt VARCHAR
+    # to PostgreSQL (SQLCODE=-400).  Force WS-VARY-LEN to zero so the program
+    # always uses the simpler INSERT path that omits PADDINGDATA.
+    result = re.sub(
+        r'([ \t]+)SUBTRACT\s+WS-REQUIRED-CA-LEN\s+FROM\s+EIBCALEN\s*\n'
+        r'[ \t]+GIVING\s+WS-VARY-LEN',
+        r'\1MOVE ZERO TO WS-VARY-LEN',
+        result, flags=re.IGNORECASE)
+
     # Final pass: if program uses WS-COMMAREA mirror, sync back to DFHCOMMAREA
     # before every GOBACK (now that all EXEC CICS RETURN -> GOBACK replacements
     # have been applied by patch_line)

@@ -286,6 +286,7 @@ Open `http://localhost:5173` in your browser. The Vite dev server proxies
 
 | Method | Path | Description |
 |---|---|---|
+| `GET` | `/api/customers` | List all customers |
 | `GET` | `/api/customers/:id` | Lookup customer by number |
 | `POST` | `/api/customers` | Create customer, returns `{ customer_num }` |
 | `PUT` | `/api/customers/:id` | Update customer fields |
@@ -295,15 +296,19 @@ Open `http://localhost:5173` in your browser. The Vite dev server proxies
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/policies/:custId/:polNum` | Lookup policy |
-| `POST` | `/api/policies` | Create policy (`type`: `E` / `H` / `M` / `C`) |
-| `DELETE` | `/api/policies/customer/:custId/:polNum` | Delete policy |
+| `GET` | `/api/policies` | List all policies |
+| `GET` | `/api/policies?cust_num=N` | List policies for a customer |
+| `GET` | `/api/policies/customer/:custId?policy_num=N&policy_type=E` | Lookup a single policy |
+| `POST` | `/api/policies` | Create policy (`pol_type`: `E` / `H` / `M` / `C`) |
+| `DELETE` | `/api/policies/customer/:custId/:polNum?policy_type=E` | Delete policy |
 
 ### Claims
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/claims/:claimNum` | Lookup claim |
+| `GET` | `/api/claims` | List all claims |
+| `GET` | `/api/claims?policy_num=N` | List claims for a policy |
+| `GET` | `/api/claims/:claimNum` | Lookup a single claim |
 | `POST` | `/api/claims` | Create claim, returns `{ claim_num }` |
 | `DELETE` | `/api/claims/:claimNum` | Delete claim |
 

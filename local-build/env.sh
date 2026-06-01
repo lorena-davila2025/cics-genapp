@@ -9,7 +9,8 @@ export PGUSER=genapp
 export PGPASSWORD=qwerty0512
 export PGOPTIONS='--search_path=genapp'
 
-export COB_LIBRARY_PATH=/Users/gabrielcamps/Documents/Projects/cics-genapp/local-build/bin
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export COB_LIBRARY_PATH="${SCRIPT_DIR}/bin"
 export COB_DYNAMIC_CALLS=YES
 
 echo "GenApp environment set (db=genapp, lib=$(echo $COB_LIBRARY_PATH))"

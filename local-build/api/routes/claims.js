@@ -3,12 +3,39 @@
 const express = require('express');
 const router  = express.Router();
 const { runCobol } = require('../utils/cobolRunner');
+const pool = require('../utils/db');
 
 function httpStatus(cobolStatus) {
     if (cobolStatus === '00') return 200;
     if (cobolStatus === '01' || cobolStatus === '02') return 404;
     return 500;
 }
+
+// ─── GET /api/claims  (list all, optional ?policy_num=N filter) ──────────
+router.get('/', async (req, res) => {
+    try {
+        const polNum = req.query.policy_num;
+        const params = polNum ? [parseInt(polNum, 10)] : [];
+        const where  = polNum ? 'WHERE c.policynumber = $1' : '';
+        const { rows } = await pool.query(
+            `SELECT c.claimnumber, c.policynumber, c.claimdate,
+                    c.cause, c.value
+             FROM genapp.claim c
+             ${where}
+             ORDER BY c.claimnumber`,
+            params
+        );
+        res.json(rows.map(r => ({
+            claim_num:   String(r.claimnumber).padStart(10, '0'),
+            policy_num:  String(r.policynumber).padStart(10, '0'),
+            claim_date:  r.claimdate,
+            cause:       (r.cause || '').trim(),
+            value:       String(r.value ?? ''),
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ─── GET /api/claims/:claimNum ────────────────────────────────────────────
 router.get('/:claimNum', (req, res) => {

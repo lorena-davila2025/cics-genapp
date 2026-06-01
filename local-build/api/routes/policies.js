@@ -3,6 +3,7 @@
 const express = require('express');
 const router  = express.Router();
 const { runCobol } = require('../utils/cobolRunner');
+const pool = require('../utils/db');
 
 /**
  * Map a COBOL return code to an HTTP status.
@@ -26,6 +27,35 @@ function resolvePolicyType(raw) {
     if (up === 'C' || up === 'COMMERCIAL') return 'C';
     return null;
 }
+
+// ─── GET /api/policies  (list all, optional ?cust_num=N filter) ─────────────
+router.get('/', async (req, res) => {
+    try {
+        const custNum = req.query.cust_num;
+        const params  = custNum ? [parseInt(custNum, 10)] : [];
+        const where   = custNum ? 'WHERE p.customernumber = $1' : '';
+        const { rows } = await pool.query(
+            `SELECT p.policynumber, p.customernumber, p.policytype,
+                    p.issuedate, p.expirydate, p.payment
+             FROM genapp.policy p
+             ${where}
+             ORDER BY p.policynumber`,
+            params
+        );
+        const TYPE_NAME = { E: 'Endowment', H: 'House', M: 'Motor', C: 'Commercial' };
+        res.json(rows.map(r => ({
+            policy_num:    String(r.policynumber).padStart(10, '0'),
+            customer_num:  String(r.customernumber).padStart(10, '0'),
+            policy_type:   TYPE_NAME[r.policytype?.trim()] || r.policytype?.trim(),
+            policy_type_code: r.policytype?.trim(),
+            issue_date:    r.issuedate,
+            expiry_date:   r.expirydate,
+            payment:       String(r.payment ?? ''),
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ─── GET /api/policies/customer/:custId ─────────────────────────────────────
 // Query params:
