@@ -1,5 +1,6 @@
 #!/bin/bash
 # Source this before running any compiled GenApp programs:
+# example of env credentials
 #   source env.sh
 
 export PGHOST=localhost
