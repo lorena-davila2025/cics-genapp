@@ -280,3 +280,73 @@ VALUES (10,'2011-08-23 10:44:34','2011-08-25','2011-08-24','HURSLEY PARK','SO212
 
 INSERT INTO commercial (policyNumber,requestDate,startDate,renewalDate,address,zipcode,latitudeN,longitudeW,customer,propertyType,firePeril,firePremium,crimePeril,crimePremium,floodPeril,floodPremium,weatherPeril,weatherPremium,status,rejectionReason)
 VALUES (9,'2011-07-17 13:13:09','2011-08-01','2011-07-30','TURF MOOR','BB104BX','53.78847','-2.230325','Burnley Football Club','STADIUM',1,44000,2,25000,3,15000,4,6000,1,'ACTIVE');
+
+-- ============================================================
+-- CLAIMS
+-- ============================================================
+
+-- Motor policy 1 (Ford KA, customer 2): minor collision
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (1,'2011-08-14',0,1200,
+  'RTA - rear end shunt at traffic lights',
+  'Minor bumper damage. Third party admitted liability. Repair estimate obtained.');
+
+-- Motor policy 1: windscreen replacement
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (1,'2011-11-22',1,350,
+  'Stone chip - windscreen cracked on motorway',
+  'Full windscreen replacement authorised. Paid to approved repairer.');
+
+-- Motor policy 3 (Dennis Fire Engine, customer 5): accident-prone vehicle
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (3,'2011-10-05',0,8500,
+  'Collision with low bridge during emergency response',
+  'Roof-mounted equipment damaged. Incident report filed with fire service.');
+
+-- Motor policy 3: theft of equipment
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (3,'2012-01-18',1,3200,
+  'Theft of breathing apparatus from unlocked vehicle',
+  'Police report reference CH/2012/0118. Equipment replaced under policy.');
+
+-- Endowment policy 4 (customer 8): critical illness claim
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (4,'2012-03-10',0,12500,
+  'Critical illness - policyholder diagnosed with condition covered under terms',
+  'Medical certificate received. Underwriter review in progress.');
+
+-- Endowment policy 5 (customer 3, Shep): partial surrender
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (5,'2011-12-01',1,5000,
+  'Partial surrender requested by policyholder',
+  'Fund value confirmed at point of surrender. Payment processed.');
+
+-- House policy 6 (customer 4, SO211UP): storm damage
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (6,'2011-10-12',0,9800,
+  'Storm damage - roof tiles displaced, water ingress to upper floor',
+  'Loss adjuster appointed. Temporary tarpaulin fitted. Full repair pending.');
+
+-- House policy 6: escape of water
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (6,'2012-02-28',1,4200,
+  'Escape of water from burst pipe in loft',
+  'Emergency plumber attended. Ceiling and flooring in bedroom replaced.');
+
+-- House policy 8 (flat, customer 9): theft
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (8,'2011-09-03',1,2700,
+  'Burglary - forced entry through rear window',
+  'Police report filed. Electronics and jewellery stolen. Claim settled.');
+
+-- Commercial policy 10 (IBM Hursley): fire damage
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (10,'2011-09-15',0,47000,
+  'Fire - electrical fault in server room caused partial office fire',
+  'Fire brigade attended. Structural survey commissioned. Business interruption logged.');
+
+-- Commercial policy 9 (Burnley FC stadium): flood
+INSERT INTO claim (policyNumber,claimDate,paid,value,cause,observations)
+VALUES (9,'2012-01-07',0,31500,
+  'Flood damage following heavy rainfall - pitch and groundfloor facilities affected',
+  'Flood defence contractor engaged. Temporary pumping in operation. Claim under assessment.');
