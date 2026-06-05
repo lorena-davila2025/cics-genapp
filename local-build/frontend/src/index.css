@@ -46,6 +46,10 @@ html, body { height: 100%; overflow: hidden; }
 
 body { display: flex; }
 
+.app-container {
+  display: flex;
+}
+
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
