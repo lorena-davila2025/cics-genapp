@@ -158,10 +158,9 @@ body { display: flex; min-height: 100vh; }
 /* ── Page header (browse pages) ─────────────────────────── */
 .page-header {
   display: flex;
-  align-items: flex-end;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.25rem;
+  align-items: baseline;
+  gap: .75rem;
+  margin-bottom: 1rem;
 }
 .page-header h2 { margin-bottom: 0; }
 .count {
@@ -169,12 +168,33 @@ body { display: flex; min-height: 100vh; }
   color: var(--txt-muted);
   font-size: .875rem;
 }
-.filter-bar {
+
+/* ── Filter section ─────────────────────────────────────── */
+.filter-section {
   display: flex;
-  align-items: flex-end;
-  gap: .5rem;
   flex-wrap: wrap;
-  margin-left: auto;
+  gap: .6rem .75rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  padding: .875rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.filter-section .field {
+  flex: 1 1 140px;
+  min-width: 110px;
+  max-width: 180px;
+}
+.filter-section .field input,
+.filter-section .field select {
+  background: var(--surface);
+}
+.filter-actions {
+  display: flex;
+  gap: .4rem;
+  align-self: flex-end;
+  padding-bottom: 1px;
 }
 
 /* ── Form ───────────────────────────────────────────────── */
@@ -334,8 +354,9 @@ code {
 .detail-panel-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: .5rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 .detail-panel-title {
   font-size: .78rem;
@@ -343,6 +364,7 @@ code {
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--amber);
+  margin-right: auto;
 }
 .detail-actions {
   display: flex;

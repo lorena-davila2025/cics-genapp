@@ -61,11 +61,20 @@ function PolicyDetail({ data }: { data: Policy }) {
 }
 
 export default function PolicyList() {
-  const [filterInput,  setFilterInput]  = useState('');
-  const [filterArg,    setFilterArg]    = useState<string | undefined>(undefined);
-  const [typeFilter,   setTypeFilter]   = useState<PolicyType | ''>('');
-  const [selectedKey,  setSelectedKey]  = useState<string | null>(null);
-  const [mode,         setMode]         = useState<PanelMode>('view');
+  // Server-side filter
+  const [custInput,  setCustInput]  = useState('');
+  const [filterArg,  setFilterArg]  = useState<string | undefined>(undefined);
+
+  // Client-side filters
+  const [typeFilter,     setTypeFilter]     = useState<PolicyType | ''>('');
+  const [issueDateFrom,  setIssueDateFrom]  = useState('');
+  const [issueDateTo,    setIssueDateTo]    = useState('');
+  const [expiryDateFrom, setExpiryDateFrom] = useState('');
+  const [expiryDateTo,   setExpiryDateTo]   = useState('');
+
+  // Selection + panel
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [mode,        setMode]        = useState<PanelMode>('view');
 
   const { data: rows, isLoading, isError, error } = useListPoliciesQuery(filterArg);
   const [triggerDetail, { data: detail, isFetching: detailFetching, isError: detailErr, error: detailError }] =
@@ -75,20 +84,30 @@ export default function PolicyList() {
 
   function handleFilter(e: React.FormEvent) {
     e.preventDefault();
-    setFilterArg(filterInput.trim() || undefined);
+    setFilterArg(custInput.trim() || undefined);
     setSelectedKey(null);
   }
 
-  function handleClear() {
-    setFilterInput('');
+  function clearFilters() {
+    setCustInput('');
     setFilterArg(undefined);
     setTypeFilter('');
+    setIssueDateFrom('');
+    setIssueDateTo('');
+    setExpiryDateFrom('');
+    setExpiryDateTo('');
     setSelectedKey(null);
+  }
+
+  function rowKey(p: Policy) {
+    const code = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
+    return `${p.customer_num}-${p.policy_num}-${code}`;
   }
 
   function selectRow(p: Policy) {
+    const key = rowKey(p);
+    if (selectedKey === key) { setSelectedKey(null); return; }
     const typeCode = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
-    const key = `${p.customer_num}-${p.policy_num}-${typeCode}`;
     setSelectedKey(key);
     setMode('view');
     triggerDetail({ custId: p.customer_num, polNum: p.policy_num, polType: typeCode });
@@ -108,46 +127,71 @@ export default function PolicyList() {
     }
   }
 
-  // Client-side type filter applied on top of the server-filtered rows
+  const hasClientFilters = typeFilter || issueDateFrom || issueDateTo || expiryDateFrom || expiryDateTo;
+  const hasAnyFilter = custInput || filterArg || hasClientFilters;
+
   const filtered = rows?.filter(p => {
-    if (!typeFilter) return true;
-    const code = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
-    return code === typeFilter;
+    if (typeFilter) {
+      const code = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
+      if (code !== typeFilter) return false;
+    }
+    if (issueDateFrom  && p.issue_date  < issueDateFrom)  return false;
+    if (issueDateTo    && p.issue_date  > issueDateTo)    return false;
+    if (expiryDateFrom && p.expiry_date < expiryDateFrom) return false;
+    if (expiryDateTo   && p.expiry_date > expiryDateTo)   return false;
+    return true;
   });
 
-  const selectedRow = filtered?.find(p => {
-    const code = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
-    return `${p.customer_num}-${p.policy_num}-${code}` === selectedKey;
-  });
+  const selectedRow = filtered?.find(p => rowKey(p) === selectedKey);
 
   return (
     <div className="card">
       <div className="page-header">
-        <h2>Policies{filtered && <span className="count"> ({filtered.length})</span>}</h2>
-        <form className="filter-bar" onSubmit={handleFilter}>
-          <div className="field" style={{ flex: '0 0 170px' }}>
-            <label>Customer #</label>
-            <input value={filterInput} onChange={e => setFilterInput(e.target.value)} placeholder="Filter by customer" />
-          </div>
-          <div className="field" style={{ flex: '0 0 150px' }}>
-            <label>Policy type</label>
-            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as PolicyType | '')}>
-              <option value="">All types</option>
-              {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{k} — {v}</option>
-              ))}
-            </select>
-          </div>
-          <button className="btn btn-secondary btn-sm" type="submit" style={{ alignSelf: 'flex-end' }}>Filter</button>
-          {(filterArg || typeFilter) && (
-            <button className="btn btn-ghost btn-sm" type="button" style={{ alignSelf: 'flex-end' }} onClick={handleClear}>Clear</button>
-          )}
-        </form>
+        <h2>Policies</h2>
+        {rows && <span className="count">{filtered?.length ?? rows.length} of {rows.length}</span>}
       </div>
+
+      <form className="filter-section" onSubmit={handleFilter}>
+        <div className="field">
+          <label>Customer #</label>
+          <input value={custInput} onChange={e => setCustInput(e.target.value)} placeholder="All customers" />
+        </div>
+        <div className="field">
+          <label>Policy type</label>
+          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as PolicyType | '')}>
+            <option value="">All types</option>
+            {Object.entries(TYPE_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{k} — {v}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label>Issue date from</label>
+          <input type="date" value={issueDateFrom} onChange={e => setIssueDateFrom(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Issue date to</label>
+          <input type="date" value={issueDateTo} onChange={e => setIssueDateTo(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Expiry date from</label>
+          <input type="date" value={expiryDateFrom} onChange={e => setExpiryDateFrom(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Expiry date to</label>
+          <input type="date" value={expiryDateTo} onChange={e => setExpiryDateTo(e.target.value)} />
+        </div>
+        <div className="filter-actions">
+          <button className="btn btn-secondary btn-sm" type="submit">Apply</button>
+          {hasAnyFilter && (
+            <button className="btn btn-ghost btn-sm" type="button" onClick={clearFilters}>Clear</button>
+          )}
+        </div>
+      </form>
 
       {isError && <div className="alert alert-err">{(error as { error?: string }).error ?? 'Request failed'}</div>}
       {isLoading && <div className="empty-state"><span className="spinner" /></div>}
-      {filtered?.length === 0 && !isLoading && <div className="empty-state">No policies found.</div>}
+      {filtered?.length === 0 && !isLoading && <div className="empty-state">No policies match the current filters.</div>}
 
       {filtered && filtered.length > 0 && (
         <div className="table-wrap">
@@ -160,8 +204,8 @@ export default function PolicyList() {
             </thead>
             <tbody>
               {filtered.map(p => {
+                const key = rowKey(p);
                 const typeCode = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
-                const key = `${p.customer_num}-${p.policy_num}-${typeCode}`;
                 return (
                   <tr
                     key={key}
@@ -182,29 +226,24 @@ export default function PolicyList() {
         </div>
       )}
 
+      {/* ── Detail panel ── */}
       {selectedKey && (
         <div className="detail-panel">
           <div className="detail-panel-header">
             <span className="detail-panel-title">
-              Policy {selectedRow ? parseInt(selectedRow.policy_num, 10) : '…'} detail
+              Policy {selectedRow ? parseInt(selectedRow.policy_num, 10) : '…'}
             </span>
-            <button className="btn btn-ghost btn-sm" onClick={() => { setSelectedKey(null); setMode('view'); }}>
-              ✕ Close
-            </button>
+            {mode === 'view' && !detailFetching && detail && (
+              <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
+                onClick={() => setMode('delete')}>Delete</button>
+            )}
+            <button className="btn btn-ghost btn-sm" onClick={() => { setSelectedKey(null); setMode('view'); }}>✕</button>
           </div>
 
           {detailFetching && <span className="spinner" />}
           {detailErr && <div className="alert alert-err">{(detailError as { error?: string }).error ?? 'Request failed'}</div>}
 
-          {detail && !detailFetching && mode === 'view' && (
-            <>
-              <PolicyDetail data={detail} />
-              <div className="detail-actions">
-                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
-                  onClick={() => setMode('delete')}>Delete</button>
-              </div>
-            </>
-          )}
+          {detail && !detailFetching && mode === 'view' && <PolicyDetail data={detail} />}
 
           {mode === 'delete' && detail && (
             <>

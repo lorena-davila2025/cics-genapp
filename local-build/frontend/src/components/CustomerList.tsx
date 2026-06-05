@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   useListCustomersQuery,
   useLazyGetCustomerQuery,
@@ -20,10 +20,15 @@ const EMPTY_FORM: CustomerForm = {
 type PanelMode = 'view' | 'edit' | 'delete';
 
 export default function CustomerList() {
-  const [nameFilter,  setNameFilter]  = useState('');
-  const [selectedId,  setSelectedId]  = useState<string | null>(null);
-  const [mode,        setMode]        = useState<PanelMode>('view');
-  const [editForm,    setEditForm]    = useState<CustomerForm>(EMPTY_FORM);
+  // Filters (all client-side — full list loads on mount)
+  const [nameFilter,     setNameFilter]     = useState('');
+  const [custNumFilter,  setCustNumFilter]  = useState('');
+  const [postcodeFilter, setPostcodeFilter] = useState('');
+
+  // Selection + panel
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mode,       setMode]       = useState<PanelMode>('view');
+  const [editForm,   setEditForm]   = useState<CustomerForm>(EMPTY_FORM);
 
   const { data: rows, isLoading, isError, error } = useListCustomersQuery();
   const [triggerDetail, { data: detail, isFetching: detailFetching, isError: detailErr, error: detailError }] =
@@ -33,49 +38,31 @@ export default function CustomerList() {
   const [deleteCustomer, { isLoading: deleting, isError: deleteErr, error: deleteError }] =
     useDeleteCustomerMutation();
 
-  // Pre-populate edit form when detail loads
-  useEffect(() => {
-    if (detail && mode === 'edit') {
-      setEditForm({
-        first_name:   detail.first_name    || '',
-        last_name:    detail.last_name     || '',
-        dob:          detail.dob           || '',
-        house_name:   detail.house_name    || '',
-        house_num:    detail.house_num     || '',
-        postcode:     detail.postcode      || '',
-        phone_mobile: detail.phone_mobile  || '',
-        phone_home:   detail.phone_home    || '',
-        email:        detail.email         || '',
-      });
-    }
-  }, [detail, mode]);
-
   function setField(field: keyof CustomerForm) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
       setEditForm(f => ({ ...f, [field]: e.target.value }));
   }
 
   function selectRow(custNum: string) {
+    if (selectedId === custNum) { closePanel(); return; }
     setSelectedId(custNum);
     setMode('view');
     triggerDetail(custNum);
   }
 
-  function openEdit() {
+  function startEdit() {
     setMode('edit');
-    if (detail) {
-      setEditForm({
-        first_name:   detail.first_name    || '',
-        last_name:    detail.last_name     || '',
-        dob:          detail.dob           || '',
-        house_name:   detail.house_name    || '',
-        house_num:    detail.house_num     || '',
-        postcode:     detail.postcode      || '',
-        phone_mobile: detail.phone_mobile  || '',
-        phone_home:   detail.phone_home    || '',
-        email:        detail.email         || '',
-      });
-    }
+    setEditForm(detail ? {
+      first_name:   detail.first_name    || '',
+      last_name:    detail.last_name     || '',
+      dob:          detail.dob           || '',
+      house_name:   detail.house_name    || '',
+      house_num:    detail.house_num     || '',
+      postcode:     detail.postcode      || '',
+      phone_mobile: detail.phone_mobile  || '',
+      phone_home:   detail.phone_home    || '',
+      email:        detail.email         || '',
+    } : EMPTY_FORM);
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -84,17 +71,14 @@ export default function CustomerList() {
     const outcome = await updateCustomer({ id: selectedId, data: editForm });
     if (!('error' in outcome)) {
       setMode('view');
-      triggerDetail(selectedId); // refresh detail
+      triggerDetail(selectedId);
     }
   }
 
   async function handleDelete() {
     if (!selectedId) return;
     const outcome = await deleteCustomer(selectedId);
-    if (!('error' in outcome)) {
-      setSelectedId(null);
-      setMode('view');
-    }
+    if (!('error' in outcome)) closePanel();
   }
 
   function closePanel() {
@@ -102,14 +86,22 @@ export default function CustomerList() {
     setMode('view');
   }
 
-  // Client-side name filter
+  function clearFilters() {
+    setNameFilter('');
+    setCustNumFilter('');
+    setPostcodeFilter('');
+  }
+
+  const hasFilters = nameFilter || custNumFilter || postcodeFilter;
+
   const filtered = rows?.filter(c => {
-    if (!nameFilter.trim()) return true;
-    const q = nameFilter.trim().toLowerCase();
-    return (
-      c.first_name.toLowerCase().includes(q) ||
-      c.last_name.toLowerCase().includes(q)
-    );
+    if (nameFilter.trim()) {
+      const q = nameFilter.trim().toLowerCase();
+      if (!c.first_name.toLowerCase().includes(q) && !c.last_name.toLowerCase().includes(q)) return false;
+    }
+    if (custNumFilter.trim() && !c.customer_num.includes(custNumFilter.trim())) return false;
+    if (postcodeFilter.trim() && !(c.postcode || '').toLowerCase().includes(postcodeFilter.trim().toLowerCase())) return false;
+    return true;
   });
 
   if (isError) return (
@@ -121,28 +113,32 @@ export default function CustomerList() {
   return (
     <div className="card">
       <div className="page-header">
-        <h2>Customers{rows && <span className="count"> ({rows.length})</span>}</h2>
-        <div className="filter-bar">
-          <div className="field" style={{ flex: '0 0 200px' }}>
-            <label>Search by name</label>
-            <input
-              value={nameFilter}
-              onChange={e => setNameFilter(e.target.value)}
-              placeholder="First or last name…"
-            />
-          </div>
-          {nameFilter && (
-            <button className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-end' }}
-              onClick={() => setNameFilter('')}>Clear</button>
-          )}
+        <h2>Customers</h2>
+        {rows && <span className="count">{filtered?.length ?? rows.length} of {rows.length}</span>}
+      </div>
+
+      <div className="filter-section">
+        <div className="field">
+          <label>Name</label>
+          <input value={nameFilter} onChange={e => setNameFilter(e.target.value)} placeholder="First or last name" />
         </div>
+        <div className="field">
+          <label>Customer #</label>
+          <input value={custNumFilter} onChange={e => setCustNumFilter(e.target.value)} placeholder="e.g. 42" />
+        </div>
+        <div className="field">
+          <label>Postcode</label>
+          <input value={postcodeFilter} onChange={e => setPostcodeFilter(e.target.value)} placeholder="e.g. SW1" />
+        </div>
+        {hasFilters && (
+          <div className="filter-actions">
+            <button className="btn btn-ghost btn-sm" onClick={clearFilters}>Clear filters</button>
+          </div>
+        )}
       </div>
 
       {isLoading && <div className="empty-state"><span className="spinner" /></div>}
-
-      {filtered && filtered.length === 0 && !isLoading && (
-        <div className="empty-state">No customers found.</div>
-      )}
+      {filtered?.length === 0 && !isLoading && <div className="empty-state">No customers match the current filters.</div>}
 
       {filtered && filtered.length > 0 && (
         <div className="table-wrap">
@@ -173,40 +169,44 @@ export default function CustomerList() {
         </div>
       )}
 
+      {/* ── Detail panel ── */}
       {selectedId && (
         <div className="detail-panel">
           <div className="detail-panel-header">
             <span className="detail-panel-title">
-              Customer {detail ? parseInt(detail.customer_num, 10) : '…'}
+              Customer {detail ? parseInt(detail.customer_num, 10) : selectedId}
             </span>
-            <button className="btn btn-ghost btn-sm" onClick={closePanel}>✕ Close</button>
+            {mode === 'view' && !detailFetching && (
+              <>
+                <button className="btn btn-secondary btn-sm" onClick={startEdit}
+                  disabled={!detail}>Edit</button>
+                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
+                  onClick={() => setMode('delete')}>Delete</button>
+              </>
+            )}
+            <button className="btn btn-ghost btn-sm" onClick={closePanel}>✕</button>
           </div>
 
           {detailFetching && <span className="spinner" />}
           {detailErr && <div className="alert alert-err">{(detailError as { error?: string }).error ?? 'Request failed'}</div>}
 
+          {/* View */}
           {detail && !detailFetching && mode === 'view' && (
-            <>
-              <dl className="kv-grid">
-                <div><dt>First name</dt><dd>{detail.first_name}</dd></div>
-                <div><dt>Last name</dt><dd>{detail.last_name}</dd></div>
-                <div><dt>Date of birth</dt><dd>{detail.dob}</dd></div>
-                <div><dt>House name</dt><dd>{detail.house_name || '—'}</dd></div>
-                <div><dt>House number</dt><dd>{detail.house_num || '—'}</dd></div>
-                <div><dt>Postcode</dt><dd>{detail.postcode || '—'}</dd></div>
-                <div><dt>Mobile</dt><dd>{detail.phone_mobile || '—'}</dd></div>
-                <div><dt>Home phone</dt><dd>{detail.phone_home || '—'}</dd></div>
-                <div><dt>Email</dt><dd>{detail.email || '—'}</dd></div>
-                <div><dt>Policies</dt><dd>{detail.num_policies}</dd></div>
-              </dl>
-              <div className="detail-actions">
-                <button className="btn btn-secondary btn-sm" onClick={openEdit}>Edit</button>
-                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
-                  onClick={() => setMode('delete')}>Delete</button>
-              </div>
-            </>
+            <dl className="kv-grid">
+              <div><dt>First name</dt><dd>{detail.first_name}</dd></div>
+              <div><dt>Last name</dt><dd>{detail.last_name}</dd></div>
+              <div><dt>Date of birth</dt><dd>{detail.dob}</dd></div>
+              <div><dt>House name</dt><dd>{detail.house_name || '—'}</dd></div>
+              <div><dt>House number</dt><dd>{detail.house_num || '—'}</dd></div>
+              <div><dt>Postcode</dt><dd>{detail.postcode || '—'}</dd></div>
+              <div><dt>Mobile</dt><dd>{detail.phone_mobile || '—'}</dd></div>
+              <div><dt>Home phone</dt><dd>{detail.phone_home || '—'}</dd></div>
+              <div><dt>Email</dt><dd>{detail.email || '—'}</dd></div>
+              <div><dt>Policies</dt><dd>{detail.num_policies}</dd></div>
+            </dl>
           )}
 
+          {/* Edit */}
           {mode === 'edit' && (
             <form className="inline-form" onSubmit={handleSave}>
               <div className="form-row">
@@ -244,10 +244,11 @@ export default function CustomerList() {
             </form>
           )}
 
+          {/* Delete */}
           {mode === 'delete' && (
             <>
               <div className="alert alert-warn">
-                Permanently delete customer <strong>{detail ? parseInt(detail.customer_num, 10) : selectedId}</strong>?
+                Permanently delete customer <strong>{parseInt(selectedId, 10)}</strong>?
                 This also removes all their policies and claims.
               </div>
               <div className="detail-actions">
