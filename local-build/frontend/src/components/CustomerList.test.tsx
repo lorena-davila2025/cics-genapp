@@ -105,7 +105,7 @@ describe('CustomerList – filters', () => {
 describe('CustomerList – detail panel', () => {
   it('panel is hidden before any row is selected', () => {
     render(<CustomerList />);
-    expect(screen.queryByText(/customer detail/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/customer \d+/i)).not.toBeInTheDocument();
   });
 
   it('clicking a row opens the detail panel and fetches detail', async () => {

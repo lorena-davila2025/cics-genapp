@@ -93,7 +93,7 @@ describe('ClaimList – filters', () => {
 describe('ClaimList – detail panel', () => {
   it('panel is hidden before any row is selected', () => {
     render(<ClaimList />);
-    expect(screen.queryByText(/claim.*detail/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/claim \d+/i)).not.toBeInTheDocument();
   });
 
   it('clicking a row opens the detail panel and fetches detail', async () => {
