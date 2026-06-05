@@ -225,27 +225,27 @@ export default function CustomerList() {
             <form className="inline-form" onSubmit={handleSave}>
               <div className="form-row">
                 <div className="field"><label>First name</label>
-                  <input value={editForm.first_name} onChange={setField('first_name')} /></div>
+                  <input value={editForm.first_name} onChange={setField('first_name')} placeholder="e.g. John" /></div>
                 <div className="field"><label>Last name</label>
-                  <input value={editForm.last_name} onChange={setField('last_name')} /></div>
+                  <input value={editForm.last_name} onChange={setField('last_name')} placeholder="e.g. Smith" /></div>
                 <div className="field"><label>DOB (YYYYMMDD)</label>
-                  <input value={editForm.dob} onChange={setField('dob')} /></div>
+                  <input value={editForm.dob} onChange={setField('dob')} placeholder="e.g. 19800115" /></div>
               </div>
               <div className="form-row">
                 <div className="field"><label>House name</label>
-                  <input value={editForm.house_name} onChange={setField('house_name')} /></div>
+                  <input value={editForm.house_name} onChange={setField('house_name')} placeholder="e.g. Rose Cottage" /></div>
                 <div className="field"><label>House number</label>
-                  <input value={editForm.house_num} onChange={setField('house_num')} /></div>
+                  <input value={editForm.house_num} onChange={setField('house_num')} placeholder="e.g. 42" /></div>
                 <div className="field"><label>Postcode</label>
-                  <input value={editForm.postcode} onChange={setField('postcode')} /></div>
+                  <input value={editForm.postcode} onChange={setField('postcode')} placeholder="e.g. SW1A 1AA" /></div>
               </div>
               <div className="form-row">
                 <div className="field"><label>Mobile</label>
-                  <input value={editForm.phone_mobile} onChange={setField('phone_mobile')} /></div>
+                  <input value={editForm.phone_mobile} onChange={setField('phone_mobile')} placeholder="e.g. 07700 900000" /></div>
                 <div className="field"><label>Home phone</label>
-                  <input value={editForm.phone_home} onChange={setField('phone_home')} /></div>
+                  <input value={editForm.phone_home} onChange={setField('phone_home')} placeholder="e.g. 020 7946 0000" /></div>
                 <div className="field"><label>Email</label>
-                  <input value={editForm.email} onChange={setField('email')} /></div>
+                  <input value={editForm.email} onChange={setField('email')} placeholder="e.g. john.smith@example.com" /></div>
               </div>
               <div className="detail-actions">
                 <button className="btn btn-primary btn-sm" type="submit" disabled={saving}>

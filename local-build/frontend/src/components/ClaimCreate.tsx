@@ -29,19 +29,19 @@ export default function ClaimCreate() {
       <form onSubmit={submit}>
         <div className="form-row">
           <div className="field"><label>Policy Number *</label>
-            <input value={form.policy_num} onChange={set('policy_num')} required /></div>
+            <input value={form.policy_num} onChange={set('policy_num')} placeholder="e.g. 100" required /></div>
           <div className="field"><label>Claim date (YYYY-MM-DD)</label>
             <input value={form.claim_date} onChange={set('claim_date')} placeholder="2024-06-15" /></div>
           <div className="field"><label>Paid</label>
-            <input value={form.paid} onChange={set('paid')} /></div>
+            <input value={form.paid} onChange={set('paid')} placeholder="e.g. 2500.00" /></div>
           <div className="field"><label>Value</label>
-            <input value={form.value} onChange={set('value')} /></div>
+            <input value={form.value} onChange={set('value')} placeholder="e.g. 5000.00" /></div>
         </div>
         <div className="form-row">
           <div className="field"><label>Cause</label>
-            <input value={form.cause} onChange={set('cause')} /></div>
+            <input value={form.cause} onChange={set('cause')} placeholder="e.g. Fire damage" /></div>
           <div className="field"><label>Observations</label>
-            <input value={form.observations} onChange={set('observations')} /></div>
+            <input value={form.observations} onChange={set('observations')} placeholder="e.g. Kitchen fire, partial damage" /></div>
         </div>
         <button className="btn btn-primary" type="submit" disabled={isLoading}>
           {isLoading ? <span className="spinner" /> : 'Create Claim'}

@@ -31,11 +31,11 @@ export default function CustomerCreate() {
         <div className="form-row">
           <div className="field">
             <label>First name *</label>
-            <input value={form.first_name} onChange={set('first_name')} required />
+            <input value={form.first_name} onChange={set('first_name')} placeholder="e.g. John" required />
           </div>
           <div className="field">
             <label>Last name *</label>
-            <input value={form.last_name} onChange={set('last_name')} required />
+            <input value={form.last_name} onChange={set('last_name')} placeholder="e.g. Smith" required />
           </div>
           <div className="field">
             <label>Date of birth * (YYYYMMDD)</label>
@@ -45,29 +45,29 @@ export default function CustomerCreate() {
         <div className="form-row">
           <div className="field">
             <label>House name</label>
-            <input value={form.house_name} onChange={set('house_name')} />
+            <input value={form.house_name} onChange={set('house_name')} placeholder="e.g. Rose Cottage" />
           </div>
           <div className="field">
             <label>House number</label>
-            <input value={form.house_num} onChange={set('house_num')} />
+            <input value={form.house_num} onChange={set('house_num')} placeholder="e.g. 42" />
           </div>
           <div className="field">
             <label>Postcode</label>
-            <input value={form.postcode} onChange={set('postcode')} />
+            <input value={form.postcode} onChange={set('postcode')} placeholder="e.g. SW1A 1AA" />
           </div>
         </div>
         <div className="form-row">
           <div className="field">
             <label>Mobile</label>
-            <input value={form.phone_mobile} onChange={set('phone_mobile')} />
+            <input value={form.phone_mobile} onChange={set('phone_mobile')} placeholder="e.g. 07700 900000" />
           </div>
           <div className="field">
             <label>Home phone</label>
-            <input value={form.phone_home} onChange={set('phone_home')} />
+            <input value={form.phone_home} onChange={set('phone_home')} placeholder="e.g. 020 7946 0000" />
           </div>
           <div className="field">
             <label>Email</label>
-            <input value={form.email} onChange={set('email')} type="email" />
+            <input value={form.email} onChange={set('email')} type="email" placeholder="e.g. john.smith@example.com" />
           </div>
         </div>
         <button className="btn btn-primary" type="submit" disabled={isLoading}>
