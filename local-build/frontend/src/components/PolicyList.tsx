@@ -1,23 +1,20 @@
-import { useState, useEffect } from 'react';
-import { api } from '../api';
+import { useState } from 'react';
+import { useListPoliciesQuery } from '../store/genappApi';
 
 export default function PolicyList() {
-  const [custFilter, setCustFilter] = useState('');
-  const [rows, setRows]             = useState(null);
-  const [error, setError]           = useState(null);
+  const [filterInput, setFilterInput] = useState('');
+  const [filterArg,   setFilterArg]   = useState<string | undefined>(undefined);
 
-  function load(cust) {
-    setRows(null); setError(null);
-    api.listPolicies(cust || undefined)
-      .then(setRows)
-      .catch(err => setError(err.message));
+  const { data: rows, isLoading, isError, error } = useListPoliciesQuery(filterArg);
+
+  function handleFilter(e: React.FormEvent) {
+    e.preventDefault();
+    setFilterArg(filterInput.trim() || undefined);
   }
 
-  useEffect(() => { load(''); }, []);
-
-  function handleFilter(e) {
-    e.preventDefault();
-    load(custFilter.trim());
+  function handleClear() {
+    setFilterInput('');
+    setFilterArg(undefined);
   }
 
   return (
@@ -28,21 +25,20 @@ export default function PolicyList() {
           <div className="field" style={{ maxWidth: 200 }}>
             <label>Filter by Customer #</label>
             <input
-              value={custFilter}
-              onChange={e => setCustFilter(e.target.value)}
+              value={filterInput}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilterInput(e.target.value)}
               placeholder="leave blank for all"
             />
           </div>
           <button className="btn btn-secondary" type="submit">Filter</button>
-          {custFilter && (
-            <button className="btn btn-secondary" type="button"
-              onClick={() => { setCustFilter(''); load(''); }}>Clear</button>
+          {filterArg && (
+            <button className="btn btn-secondary" type="button" onClick={handleClear}>Clear</button>
           )}
         </div>
       </form>
 
-      {error && <div className="alert alert-err">{error}</div>}
-      {!rows && !error && <span className="spinner" />}
+      {isError && <div className="alert alert-err">{(error as { error?: string }).error ?? 'Request failed'}</div>}
+      {isLoading && <span className="spinner" />}
       {rows && rows.length === 0 && (
         <p style={{ color: 'var(--gray-600)', fontSize: '.875rem' }}>No policies found.</p>
       )}

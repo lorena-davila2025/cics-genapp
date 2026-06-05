@@ -1,18 +1,14 @@
-import { useState, useEffect } from 'react';
-import { api } from '../api';
+import { useListCustomersQuery } from '../store/genappApi';
 
 export default function CustomerList() {
-  const [rows, setRows]   = useState(null);
-  const [error, setError] = useState(null);
+  const { data: rows, isLoading, isError, error } = useListCustomersQuery();
 
-  useEffect(() => {
-    api.listCustomers()
-      .then(setRows)
-      .catch(err => setError(err.message));
-  }, []);
-
-  if (error) return <div className="card"><div className="alert alert-err">{error}</div></div>;
-  if (!rows)  return <div className="card"><span className="spinner" /></div>;
+  if (isError) return (
+    <div className="card">
+      <div className="alert alert-err">{(error as { error?: string }).error ?? 'Request failed'}</div>
+    </div>
+  );
+  if (isLoading || !rows) return <div className="card"><span className="spinner" /></div>;
 
   return (
     <div className="card">

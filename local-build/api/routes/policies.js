@@ -175,25 +175,25 @@ router.get('/customer/:custId', (req, res) => {
 
 // ─── POST /api/policies ──────────────────────────────────────────────────
 router.post('/', (req, res) => {
-    const { cust_num, pol_type, issue_date, expiry_date,
+    const { customer_num, policy_type, issue_date, expiry_date,
             broker_id = '0', brokers_ref = '', payment = '0' } = req.body;
 
-    if (!cust_num || !pol_type || !issue_date || !expiry_date) {
+    if (!customer_num || !policy_type || !issue_date || !expiry_date) {
         return res.status(400).json({
-            error: 'cust_num, pol_type, issue_date, expiry_date are required',
+            error: 'customer_num, policy_type, issue_date, expiry_date are required',
         });
     }
 
-    const type = resolvePolicyType(pol_type);
+    const type = resolvePolicyType(policy_type);
     if (!type) {
         return res.status(400).json({
-            error: 'pol_type must be E, H, M or C',
+            error: 'policy_type must be E, H, M or C',
             valid_values: ['E (endowment)', 'H (house)', 'M (motor)', 'C (commercial)'],
         });
     }
 
     const env = {
-        CUST_NUM:    cust_num,
+        CUST_NUM:    customer_num,
         POL_TYPE:    type,
         ISSUE_DATE:  issue_date,
         EXPIRY_DATE: expiry_date,

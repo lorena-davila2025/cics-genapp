@@ -1,27 +1,17 @@
 import { useState } from 'react';
-import { api } from '../api';
+import { useLazyGetCustomerQuery } from '../store/genappApi';
 
-function fmtNum(s) {
+function fmtNum(s: string): string {
   return s ? String(parseInt(s, 10)) : s;
 }
 
 export default function CustomerLookup() {
   const [custId, setCustId] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [trigger, { data: result, isLoading, isError, error }] = useLazyGetCustomerQuery();
 
-  async function lookup(e) {
+  function lookup(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true); setResult(null); setError(null);
-    try {
-      const data = await api.getCustomer(custId.trim());
-      setResult(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    trigger(custId.trim());
   }
 
   return (
@@ -33,20 +23,20 @@ export default function CustomerLookup() {
             <label>Customer Number</label>
             <input
               value={custId}
-              onChange={e => setCustId(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustId(e.target.value)}
               placeholder="e.g. 1"
               required
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button className="btn btn-primary" type="submit" disabled={loading}>
-              {loading ? <span className="spinner" /> : 'Search'}
+            <button className="btn btn-primary" type="submit" disabled={isLoading}>
+              {isLoading ? <span className="spinner" /> : 'Search'}
             </button>
           </div>
         </div>
       </form>
 
-      {error && <div className="alert alert-err">{error}</div>}
+      {isError && <div className="alert alert-err">{(error as { error?: string }).error ?? 'Request failed'}</div>}
 
       {result && (
         <>

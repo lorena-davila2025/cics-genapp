@@ -1,53 +1,52 @@
 import { useState } from 'react';
-import { api } from '../api';
+import { useLazyGetCustomerQuery, useUpdateCustomerMutation } from '../store/genappApi';
+import type { Customer } from '../types';
+
+type CustomerForm = Required<Pick<Customer, 'first_name' | 'last_name' | 'dob' | 'house_name' | 'house_num' | 'postcode' | 'phone_mobile' | 'phone_home' | 'email'>>;
+
+const EMPTY_FORM: CustomerForm = {
+  first_name: '', last_name: '', dob: '',
+  house_name: '', house_num: '', postcode: '',
+  phone_mobile: '', phone_home: '', email: '',
+};
 
 export default function CustomerUpdate() {
   const [custId, setCustId] = useState('');
   const [loaded, setLoaded] = useState(false);
-  const [form, setForm] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [form, setForm]     = useState<CustomerForm>(EMPTY_FORM);
 
-  function set(field) {
-    return (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+  const [triggerLoad, { isLoading: isLoadLoading, isError: isLoadError, error: loadError }] =
+    useLazyGetCustomerQuery();
+  const [updateCustomer, { isLoading: isSaving, isError: isSaveError, error: saveError, data: saveResult }] =
+    useUpdateCustomerMutation();
+
+  function set(field: keyof CustomerForm) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [field]: e.target.value }));
   }
 
-  async function load(e) {
+  async function load(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true); setResult(null); setError(null);
-    try {
-      const data = await api.getCustomer(custId.trim());
+    const outcome = await triggerLoad(custId.trim());
+    if ('data' in outcome && outcome.data) {
+      const data = outcome.data;
       setForm({
-        first_name: data.first_name || '',
-        last_name:  data.last_name  || '',
-        dob:        data.dob        || '',
-        house_name: data.house_name || '',
-        house_num:  data.house_num  || '',
-        postcode:   data.postcode   || '',
-        phone_mobile: data.phone_mobile || '',
-        phone_home:   data.phone_home   || '',
-        email:        data.email        || '',
+        first_name:   data.first_name    || '',
+        last_name:    data.last_name     || '',
+        dob:          data.dob           || '',
+        house_name:   data.house_name    || '',
+        house_num:    data.house_num     || '',
+        postcode:     data.postcode      || '',
+        phone_mobile: data.phone_mobile  || '',
+        phone_home:   data.phone_home    || '',
+        email:        data.email         || '',
       });
       setLoaded(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }
 
-  async function save(e) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true); setResult(null); setError(null);
-    try {
-      const data = await api.updateCustomer(custId.trim(), form);
-      setResult(data.message);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    await updateCustomer({ id: custId.trim(), data: form });
   }
 
   return (
@@ -59,15 +58,15 @@ export default function CustomerUpdate() {
           <div className="form-row">
             <div className="field">
               <label>Customer Number</label>
-              <input value={custId} onChange={e => setCustId(e.target.value)} required />
+              <input value={custId} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustId(e.target.value)} required />
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <button className="btn btn-secondary" type="submit" disabled={loading}>
-                {loading ? <span className="spinner" /> : 'Load'}
+              <button className="btn btn-secondary" type="submit" disabled={isLoadLoading}>
+                {isLoadLoading ? <span className="spinner" /> : 'Load'}
               </button>
             </div>
           </div>
-          {error && <div className="alert alert-err">{error}</div>}
+          {isLoadError && <div className="alert alert-err">{(loadError as { error?: string }).error ?? 'Request failed'}</div>}
         </form>
       )}
 
@@ -77,7 +76,7 @@ export default function CustomerUpdate() {
             Editing customer <strong>{parseInt(custId, 10)}</strong> &nbsp;
             <button type="button" className="btn btn-secondary"
               style={{ fontSize: '.75rem', padding: '.2rem .6rem' }}
-              onClick={() => { setLoaded(false); setResult(null); setError(null); }}>
+              onClick={() => { setLoaded(false); }}>
               Change
             </button>
           </p>
@@ -105,11 +104,11 @@ export default function CustomerUpdate() {
             <div className="field"><label>Email</label>
               <input value={form.email} onChange={set('email')} /></div>
           </div>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? <span className="spinner" /> : 'Save Changes'}
+          <button className="btn btn-primary" type="submit" disabled={isSaving}>
+            {isSaving ? <span className="spinner" /> : 'Save Changes'}
           </button>
-          {error  && <div className="alert alert-err" style={{ marginTop: '1rem' }}>{error}</div>}
-          {result && <div className="alert alert-ok" style={{ marginTop: '1rem' }}>{result}</div>}
+          {isSaveError && <div className="alert alert-err" style={{ marginTop: '1rem' }}>{(saveError as { error?: string }).error ?? 'Request failed'}</div>}
+          {saveResult && <div className="alert alert-ok" style={{ marginTop: '1rem' }}>{saveResult.message}</div>}
         </form>
       )}
     </div>

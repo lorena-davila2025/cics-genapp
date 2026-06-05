@@ -1,34 +1,27 @@
 import { useState } from 'react';
-import { api } from '../api';
+import { useCreateCustomerMutation } from '../store/genappApi';
+import type { Customer } from '../types';
 
-const EMPTY = {
+type CustomerForm = Required<Pick<Customer, 'first_name' | 'last_name' | 'dob' | 'house_name' | 'house_num' | 'postcode' | 'phone_mobile' | 'phone_home' | 'email'>>;
+
+const EMPTY: CustomerForm = {
   first_name: '', last_name: '', dob: '',
   house_name: '', house_num: '', postcode: '',
   phone_mobile: '', phone_home: '', email: '',
 };
 
 export default function CustomerCreate() {
-  const [form, setForm] = useState(EMPTY);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [form, setForm] = useState<CustomerForm>(EMPTY);
+  const [createCustomer, { isLoading, isError, error, data: result }] = useCreateCustomerMutation();
 
-  function set(field) {
-    return (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+  function set(field: keyof CustomerForm) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [field]: e.target.value }));
   }
 
-  async function submit(e) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true); setResult(null); setError(null);
-    try {
-      const data = await api.createCustomer(form);
-      setResult(data);
-      setForm(EMPTY);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    const outcome = await createCustomer(form);
+    if (!('error' in outcome)) setForm(EMPTY);
   }
 
   return (
@@ -77,12 +70,12 @@ export default function CustomerCreate() {
             <input value={form.email} onChange={set('email')} type="email" />
           </div>
         </div>
-        <button className="btn btn-primary" type="submit" disabled={loading}>
-          {loading ? <span className="spinner" /> : 'Create Customer'}
+        <button className="btn btn-primary" type="submit" disabled={isLoading}>
+          {isLoading ? <span className="spinner" /> : 'Create Customer'}
         </button>
       </form>
 
-      {error && <div className="alert alert-err" style={{ marginTop: '1rem' }}>{error}</div>}
+      {isError && <div className="alert alert-err" style={{ marginTop: '1rem' }}>{(error as { error?: string }).error ?? 'Request failed'}</div>}
       {result && (
         <div className="alert alert-ok" style={{ marginTop: '1rem' }}>
           Customer created — number: <strong>{parseInt(result.customer_num, 10)}</strong>

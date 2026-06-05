@@ -1,24 +1,25 @@
 import { useState } from 'react';
-import { api } from '../api';
+import { useLazyGetPolicyQuery } from '../store/genappApi';
+import type { Policy, PolicyType } from '../types';
 
-const TYPE_LABELS = { E: 'Endowment', H: 'House', M: 'Motor', C: 'Commercial' };
+const TYPE_LABELS: Record<PolicyType, string> = { E: 'Endowment', H: 'House', M: 'Motor', C: 'Commercial' };
 
-function PolicyFields({ data }) {
-  const type = data.policy_type?.trim().toUpperCase().charAt(0) || '';
+function PolicyFields({ data }: { data: Policy }) {
+  const type = data.policy_type?.trim().toUpperCase().charAt(0) ?? '';
 
-  const common = [
+  const common: [string, string | number | undefined][] = [
     ['Customer #', parseInt(data.customer_num, 10)],
     ['Policy #', parseInt(data.policy_num, 10)],
     ['Type', data.policy_type],
     ['Issue date', data.issue_date],
     ['Expiry date', data.expiry_date],
     ['Last changed', data.last_changed],
-    ['Broker ID', parseInt(data.broker_id, 10)],
+    ['Broker ID', data.broker_id !== undefined ? parseInt(data.broker_id, 10) : undefined],
     ['Brokers ref', data.brokers_ref],
     ['Payment', data.payment],
   ];
 
-  const typeFields = {
+  const typeFields: Record<string, [string, string | undefined][]> = {
     E: [
       ['With profits', data.with_profits],
       ['Equities', data.equities],
@@ -64,14 +65,14 @@ function PolicyFields({ data }) {
     ],
   };
 
-  const rows = [...common, ...(typeFields[type] || [])];
+  const rows = [...common, ...(typeFields[type] ?? [])];
 
   return (
     <dl className="kv-grid">
       {rows.map(([k, v]) => (
         <>
-          <dt key={k + '-k'}>{k}</dt>
-          <dd key={k + '-v'}>{v ?? '—'}</dd>
+          <dt key={String(k) + '-k'}>{k}</dt>
+          <dd key={String(k) + '-v'}>{v ?? '—'}</dd>
         </>
       ))}
     </dl>
@@ -82,21 +83,11 @@ export default function PolicyLookup() {
   const [custId, setCustId]   = useState('');
   const [polNum, setPolNum]   = useState('');
   const [polType, setPolType] = useState('H');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult]   = useState(null);
-  const [error, setError]     = useState(null);
+  const [trigger, { data: result, isLoading, isError, error }] = useLazyGetPolicyQuery();
 
-  async function lookup(e) {
+  function lookup(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true); setResult(null); setError(null);
-    try {
-      const data = await api.getPolicy(custId.trim(), polNum.trim(), polType);
-      setResult(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    trigger({ custId: custId.trim(), polNum: polNum.trim(), polType });
   }
 
   return (
@@ -106,29 +97,29 @@ export default function PolicyLookup() {
         <div className="form-row">
           <div className="field">
             <label>Customer Number</label>
-            <input value={custId} onChange={e => setCustId(e.target.value)} required />
+            <input value={custId} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustId(e.target.value)} required />
           </div>
           <div className="field">
             <label>Policy Number</label>
-            <input value={polNum} onChange={e => setPolNum(e.target.value)} required />
+            <input value={polNum} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPolNum(e.target.value)} required />
           </div>
           <div className="field">
             <label>Policy Type</label>
-            <select value={polType} onChange={e => setPolType(e.target.value)}>
+            <select value={polType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPolType(e.target.value)}>
               {Object.entries(TYPE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{k} — {v}</option>
               ))}
             </select>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button className="btn btn-primary" type="submit" disabled={loading}>
-              {loading ? <span className="spinner" /> : 'Search'}
+            <button className="btn btn-primary" type="submit" disabled={isLoading}>
+              {isLoading ? <span className="spinner" /> : 'Search'}
             </button>
           </div>
         </div>
       </form>
 
-      {error  && <div className="alert alert-err">{error}</div>}
+      {isError && <div className="alert alert-err">{(error as { error?: string }).error ?? 'Request failed'}</div>}
       {result && (
         <>
           <hr />
