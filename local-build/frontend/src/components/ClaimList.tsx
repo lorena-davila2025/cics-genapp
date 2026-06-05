@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { useListClaimsQuery, useLazyGetClaimQuery } from '../store/genappApi';
+import { useListClaimsQuery, useLazyGetClaimQuery, useDeleteClaimMutation } from '../store/genappApi';
+
+type PanelMode = 'view' | 'delete';
 
 export default function ClaimList() {
   const [filterInput, setFilterInput] = useState('');
   const [filterArg,   setFilterArg]   = useState<string | undefined>(undefined);
   const [selectedId,  setSelectedId]  = useState<string | null>(null);
+  const [mode,        setMode]        = useState<PanelMode>('view');
 
   const { data: rows, isLoading, isError, error } = useListClaimsQuery(filterArg);
-  const [triggerDetail, { data: detail, isFetching: isDetailFetching, isError: isDetailError, error: detailError }] =
+  const [triggerDetail, { data: detail, isFetching: detailFetching, isError: detailErr, error: detailError }] =
     useLazyGetClaimQuery();
+  const [deleteClaim, { isLoading: deleting, isError: deleteErr, error: deleteError }] =
+    useDeleteClaimMutation();
 
   function handleFilter(e: React.FormEvent) {
     e.preventDefault();
@@ -22,40 +27,43 @@ export default function ClaimList() {
     setSelectedId(null);
   }
 
-  function handleRowClick(claimNum: string) {
+  function selectRow(claimNum: string) {
     setSelectedId(claimNum);
+    setMode('view');
     triggerDetail(claimNum);
+  }
+
+  async function handleDelete() {
+    if (!selectedId) return;
+    const outcome = await deleteClaim(selectedId);
+    if (!('error' in outcome)) {
+      setSelectedId(null);
+      setMode('view');
+    }
   }
 
   return (
     <div className="card">
-      <div className="list-header">
+      <div className="page-header">
         <h2>Claims{rows && <span className="count"> ({rows.length})</span>}</h2>
-        <form className="search-bar" onSubmit={handleFilter}>
-          <div className="field" style={{ flex: '0 0 180px' }}>
-            <label>Filter by Policy #</label>
-            <input
-              value={filterInput}
-              onChange={e => setFilterInput(e.target.value)}
-              placeholder="leave blank for all"
-            />
+        <form className="filter-bar" onSubmit={handleFilter}>
+          <div className="field" style={{ flex: '0 0 170px' }}>
+            <label>Policy #</label>
+            <input value={filterInput} onChange={e => setFilterInput(e.target.value)} placeholder="Filter by policy" />
           </div>
-          <button className="btn btn-secondary" type="submit" style={{ alignSelf: 'flex-end' }}>Filter</button>
+          <button className="btn btn-secondary btn-sm" type="submit" style={{ alignSelf: 'flex-end' }}>Filter</button>
           {filterArg && (
-            <button className="btn btn-secondary" type="button" style={{ alignSelf: 'flex-end' }} onClick={handleClear}>Clear</button>
+            <button className="btn btn-ghost btn-sm" type="button" style={{ alignSelf: 'flex-end' }} onClick={handleClear}>Clear</button>
           )}
         </form>
       </div>
 
       {isError && <div className="alert alert-err">{(error as { error?: string }).error ?? 'Request failed'}</div>}
-      {isLoading && <span className="spinner" />}
-      {rows?.length === 0 && <p style={{ color: 'var(--gray-600)', fontSize: '.875rem' }}>No claims found.</p>}
+      {isLoading && <div className="empty-state"><span className="spinner" /></div>}
+      {rows?.length === 0 && !isLoading && <div className="empty-state">No claims found.</div>}
 
       {rows && rows.length > 0 && (
-        <>
-          <p style={{ fontSize: '.8rem', color: 'var(--gray-600)', marginBottom: '.5rem' }}>
-            {rows.length} result{rows.length !== 1 ? 's' : ''} — click a row for full detail
-          </p>
+        <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -67,11 +75,10 @@ export default function ClaimList() {
                 <tr
                   key={c.claim_num}
                   className={selectedId === c.claim_num ? 'row-selected' : undefined}
-                  onClick={() => handleRowClick(c.claim_num)}
-                  style={{ cursor: 'pointer' }}
+                  onClick={() => selectRow(c.claim_num)}
                 >
-                  <td><code>{c.claim_num}</code></td>
-                  <td><code>{c.policy_num}</code></td>
+                  <td><code>{parseInt(c.claim_num, 10)}</code></td>
+                  <td><code>{parseInt(c.policy_num, 10)}</code></td>
                   <td>{c.claim_date}</td>
                   <td>{c.cause}</td>
                   <td>{c.value}</td>
@@ -79,33 +86,54 @@ export default function ClaimList() {
               ))}
             </tbody>
           </table>
-        </>
+        </div>
       )}
 
       {selectedId && (
         <div className="detail-panel">
           <div className="detail-panel-header">
-            <span>Claim {parseInt(selectedId, 10)} detail</span>
-            <button
-              type="button" className="btn btn-secondary"
-              style={{ fontSize: '.75rem', padding: '.2rem .6rem' }}
-              onClick={() => setSelectedId(null)}
-            >
-              Close
+            <span className="detail-panel-title">
+              Claim {parseInt(selectedId, 10)} detail
+            </span>
+            <button className="btn btn-ghost btn-sm" onClick={() => { setSelectedId(null); setMode('view'); }}>
+              ✕ Close
             </button>
           </div>
-          {isDetailFetching && <span className="spinner" />}
-          {isDetailError && <div className="alert alert-err">{(detailError as { error?: string }).error ?? 'Request failed'}</div>}
-          {detail && !isDetailFetching && (
-            <dl className="kv-grid">
-              <dt>Claim #</dt>   <dd>{parseInt(detail.claim_num, 10)}</dd>
-              <dt>Policy #</dt>  <dd>{parseInt(detail.policy_num, 10)}</dd>
-              <dt>Claim date</dt><dd>{detail.claim_date}</dd>
-              <dt>Paid</dt>      <dd>{detail.paid !== undefined ? parseInt(detail.paid, 10) : '—'}</dd>
-              <dt>Value</dt>     <dd>{parseInt(detail.value, 10)}</dd>
-              <dt>Cause</dt>     <dd>{detail.cause}</dd>
-              <dt>Observations</dt><dd>{detail.observations ?? '—'}</dd>
-            </dl>
+
+          {detailFetching && <span className="spinner" />}
+          {detailErr && <div className="alert alert-err">{(detailError as { error?: string }).error ?? 'Request failed'}</div>}
+
+          {detail && !detailFetching && mode === 'view' && (
+            <>
+              <dl className="kv-grid">
+                <div><dt>Claim #</dt>       <dd>{parseInt(detail.claim_num, 10)}</dd></div>
+                <div><dt>Policy #</dt>      <dd>{parseInt(detail.policy_num, 10)}</dd></div>
+                <div><dt>Claim date</dt>    <dd>{detail.claim_date}</dd></div>
+                <div><dt>Paid</dt>          <dd>{detail.paid !== undefined ? parseInt(detail.paid, 10) : '—'}</dd></div>
+                <div><dt>Value</dt>         <dd>{parseInt(detail.value, 10)}</dd></div>
+                <div><dt>Cause</dt>         <dd>{detail.cause}</dd></div>
+                <div><dt>Observations</dt>  <dd>{detail.observations ?? '—'}</dd></div>
+              </dl>
+              <div className="detail-actions">
+                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
+                  onClick={() => setMode('delete')}>Delete</button>
+              </div>
+            </>
+          )}
+
+          {mode === 'delete' && (
+            <>
+              <div className="alert alert-warn">
+                Permanently delete claim <strong>{parseInt(selectedId, 10)}</strong>?
+              </div>
+              <div className="detail-actions">
+                <button className="btn btn-danger btn-sm" onClick={handleDelete} disabled={deleting}>
+                  {deleting ? <span className="spinner" /> : 'Confirm delete'}
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => setMode('view')}>Cancel</button>
+              </div>
+              {deleteErr && <div className="alert alert-err" style={{ marginTop: '.75rem' }}>{(deleteError as { error?: string }).error ?? 'Request failed'}</div>}
+            </>
           )}
         </div>
       )}

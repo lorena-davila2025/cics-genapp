@@ -1,27 +1,116 @@
-import { useState } from 'react';
-import { useListCustomersQuery, useLazyGetCustomerQuery } from '../store/genappApi';
+import { useState, useEffect } from 'react';
+import {
+  useListCustomersQuery,
+  useLazyGetCustomerQuery,
+  useUpdateCustomerMutation,
+  useDeleteCustomerMutation,
+} from '../store/genappApi';
+import type { Customer } from '../types';
+
+type CustomerForm = Required<Pick<Customer,
+  'first_name' | 'last_name' | 'dob' | 'house_name' | 'house_num' |
+  'postcode' | 'phone_mobile' | 'phone_home' | 'email'>>;
+
+const EMPTY_FORM: CustomerForm = {
+  first_name: '', last_name: '', dob: '',
+  house_name: '', house_num: '', postcode: '',
+  phone_mobile: '', phone_home: '', email: '',
+};
+
+type PanelMode = 'view' | 'edit' | 'delete';
 
 export default function CustomerList() {
-  const [searchInput, setSearchInput] = useState('');
-  const [selectedId, setSelectedId]   = useState<string | null>(null);
+  const [nameFilter,  setNameFilter]  = useState('');
+  const [selectedId,  setSelectedId]  = useState<string | null>(null);
+  const [mode,        setMode]        = useState<PanelMode>('view');
+  const [editForm,    setEditForm]    = useState<CustomerForm>(EMPTY_FORM);
 
   const { data: rows, isLoading, isError, error } = useListCustomersQuery();
-  const [triggerDetail, { data: detail, isFetching: isDetailFetching, isError: isDetailError, error: detailError }] =
+  const [triggerDetail, { data: detail, isFetching: detailFetching, isError: detailErr, error: detailError }] =
     useLazyGetCustomerQuery();
+  const [updateCustomer, { isLoading: saving, isError: saveErr, error: saveError, data: saveResult }] =
+    useUpdateCustomerMutation();
+  const [deleteCustomer, { isLoading: deleting, isError: deleteErr, error: deleteError }] =
+    useDeleteCustomerMutation();
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const id = searchInput.trim();
-    if (!id) return;
-    setSelectedId(id);
-    triggerDetail(id);
+  // Pre-populate edit form when detail loads
+  useEffect(() => {
+    if (detail && mode === 'edit') {
+      setEditForm({
+        first_name:   detail.first_name    || '',
+        last_name:    detail.last_name     || '',
+        dob:          detail.dob           || '',
+        house_name:   detail.house_name    || '',
+        house_num:    detail.house_num     || '',
+        postcode:     detail.postcode      || '',
+        phone_mobile: detail.phone_mobile  || '',
+        phone_home:   detail.phone_home    || '',
+        email:        detail.email         || '',
+      });
+    }
+  }, [detail, mode]);
+
+  function setField(field: keyof CustomerForm) {
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
+      setEditForm(f => ({ ...f, [field]: e.target.value }));
   }
 
-  function handleRowClick(custNum: string) {
+  function selectRow(custNum: string) {
     setSelectedId(custNum);
-    setSearchInput(custNum);
+    setMode('view');
     triggerDetail(custNum);
   }
+
+  function openEdit() {
+    setMode('edit');
+    if (detail) {
+      setEditForm({
+        first_name:   detail.first_name    || '',
+        last_name:    detail.last_name     || '',
+        dob:          detail.dob           || '',
+        house_name:   detail.house_name    || '',
+        house_num:    detail.house_num     || '',
+        postcode:     detail.postcode      || '',
+        phone_mobile: detail.phone_mobile  || '',
+        phone_home:   detail.phone_home    || '',
+        email:        detail.email         || '',
+      });
+    }
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedId) return;
+    const outcome = await updateCustomer({ id: selectedId, data: editForm });
+    if (!('error' in outcome)) {
+      setMode('view');
+      triggerDetail(selectedId); // refresh detail
+    }
+  }
+
+  async function handleDelete() {
+    if (!selectedId) return;
+    const outcome = await deleteCustomer(selectedId);
+    if (!('error' in outcome)) {
+      setSelectedId(null);
+      setMode('view');
+    }
+  }
+
+  function closePanel() {
+    setSelectedId(null);
+    setMode('view');
+  }
+
+  // Client-side name filter
+  const filtered = rows?.filter(c => {
+    if (!nameFilter.trim()) return true;
+    const q = nameFilter.trim().toLowerCase();
+    return (
+      c.first_name.toLowerCase().includes(q) ||
+      c.last_name.toLowerCase().includes(q)
+    );
+  });
 
   if (isError) return (
     <div className="card">
@@ -31,78 +120,144 @@ export default function CustomerList() {
 
   return (
     <div className="card">
-      <div className="list-header">
+      <div className="page-header">
         <h2>Customers{rows && <span className="count"> ({rows.length})</span>}</h2>
-        <form className="search-bar" onSubmit={handleSearch}>
-          <div className="field" style={{ flex: '0 0 160px' }}>
-            <label>Customer #</label>
-            <input value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="e.g. 1" />
+        <div className="filter-bar">
+          <div className="field" style={{ flex: '0 0 200px' }}>
+            <label>Search by name</label>
+            <input
+              value={nameFilter}
+              onChange={e => setNameFilter(e.target.value)}
+              placeholder="First or last name…"
+            />
           </div>
-          <button className="btn btn-primary" type="submit" disabled={isDetailFetching} style={{ alignSelf: 'flex-end' }}>
-            {isDetailFetching ? <span className="spinner" /> : 'Look up'}
-          </button>
-        </form>
+          {nameFilter && (
+            <button className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-end' }}
+              onClick={() => setNameFilter('')}>Clear</button>
+          )}
+        </div>
       </div>
 
-      {isLoading && <span className="spinner" />}
-      {rows?.length === 0 && <p style={{ color: 'var(--gray-600)', fontSize: '.875rem' }}>No customers found.</p>}
+      {isLoading && <div className="empty-state"><span className="spinner" /></div>}
 
-      {rows && rows.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>First Name</th><th>Last Name</th>
-              <th>Date of Birth</th><th>Postcode</th><th>Policies</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(c => (
-              <tr
-                key={c.customer_num}
-                className={selectedId === c.customer_num ? 'row-selected' : undefined}
-                onClick={() => handleRowClick(c.customer_num)}
-                style={{ cursor: 'pointer' }}
-              >
-                <td><code>{parseInt(c.customer_num, 10)}</code></td>
-                <td>{c.first_name}</td>
-                <td>{c.last_name}</td>
-                <td>{c.dob}</td>
-                <td>{c.postcode}</td>
-                <td>{c.num_policies}</td>
+      {filtered && filtered.length === 0 && !isLoading && (
+        <div className="empty-state">No customers found.</div>
+      )}
+
+      {filtered && filtered.length > 0 && (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>First Name</th><th>Last Name</th>
+                <th>Date of Birth</th><th>Postcode</th><th>Policies</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map(c => (
+                <tr
+                  key={c.customer_num}
+                  className={selectedId === c.customer_num ? 'row-selected' : undefined}
+                  onClick={() => selectRow(c.customer_num)}
+                >
+                  <td><code>{parseInt(c.customer_num, 10)}</code></td>
+                  <td>{c.first_name}</td>
+                  <td>{c.last_name}</td>
+                  <td>{c.dob}</td>
+                  <td>{c.postcode}</td>
+                  <td>{c.num_policies}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {selectedId && (
         <div className="detail-panel">
           <div className="detail-panel-header">
-            <span>Customer detail</span>
-            <button
-              type="button" className="btn btn-secondary"
-              style={{ fontSize: '.75rem', padding: '.2rem .6rem' }}
-              onClick={() => { setSelectedId(null); setSearchInput(''); }}
-            >
-              Close
-            </button>
+            <span className="detail-panel-title">
+              Customer {detail ? parseInt(detail.customer_num, 10) : '…'}
+            </span>
+            <button className="btn btn-ghost btn-sm" onClick={closePanel}>✕ Close</button>
           </div>
-          {isDetailFetching && <span className="spinner" />}
-          {isDetailError && <div className="alert alert-err">{(detailError as { error?: string }).error ?? 'Request failed'}</div>}
-          {detail && !isDetailFetching && (
-            <dl className="kv-grid">
-              <dt>Customer #</dt><dd>{parseInt(detail.customer_num, 10)}</dd>
-              <dt>First name</dt><dd>{detail.first_name}</dd>
-              <dt>Last name</dt><dd>{detail.last_name}</dd>
-              <dt>Date of birth</dt><dd>{detail.dob}</dd>
-              <dt>House name</dt><dd>{detail.house_name || '—'}</dd>
-              <dt>House number</dt><dd>{detail.house_num || '—'}</dd>
-              <dt>Postcode</dt><dd>{detail.postcode || '—'}</dd>
-              <dt>Mobile</dt><dd>{detail.phone_mobile || '—'}</dd>
-              <dt>Home phone</dt><dd>{detail.phone_home || '—'}</dd>
-              <dt>Email</dt><dd>{detail.email || '—'}</dd>
-              <dt>Policies</dt><dd>{detail.num_policies}</dd>
-            </dl>
+
+          {detailFetching && <span className="spinner" />}
+          {detailErr && <div className="alert alert-err">{(detailError as { error?: string }).error ?? 'Request failed'}</div>}
+
+          {detail && !detailFetching && mode === 'view' && (
+            <>
+              <dl className="kv-grid">
+                <div><dt>First name</dt><dd>{detail.first_name}</dd></div>
+                <div><dt>Last name</dt><dd>{detail.last_name}</dd></div>
+                <div><dt>Date of birth</dt><dd>{detail.dob}</dd></div>
+                <div><dt>House name</dt><dd>{detail.house_name || '—'}</dd></div>
+                <div><dt>House number</dt><dd>{detail.house_num || '—'}</dd></div>
+                <div><dt>Postcode</dt><dd>{detail.postcode || '—'}</dd></div>
+                <div><dt>Mobile</dt><dd>{detail.phone_mobile || '—'}</dd></div>
+                <div><dt>Home phone</dt><dd>{detail.phone_home || '—'}</dd></div>
+                <div><dt>Email</dt><dd>{detail.email || '—'}</dd></div>
+                <div><dt>Policies</dt><dd>{detail.num_policies}</dd></div>
+              </dl>
+              <div className="detail-actions">
+                <button className="btn btn-secondary btn-sm" onClick={openEdit}>Edit</button>
+                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }}
+                  onClick={() => setMode('delete')}>Delete</button>
+              </div>
+            </>
+          )}
+
+          {mode === 'edit' && (
+            <form className="inline-form" onSubmit={handleSave}>
+              <div className="form-row">
+                <div className="field"><label>First name</label>
+                  <input value={editForm.first_name} onChange={setField('first_name')} /></div>
+                <div className="field"><label>Last name</label>
+                  <input value={editForm.last_name} onChange={setField('last_name')} /></div>
+                <div className="field"><label>DOB (YYYYMMDD)</label>
+                  <input value={editForm.dob} onChange={setField('dob')} /></div>
+              </div>
+              <div className="form-row">
+                <div className="field"><label>House name</label>
+                  <input value={editForm.house_name} onChange={setField('house_name')} /></div>
+                <div className="field"><label>House number</label>
+                  <input value={editForm.house_num} onChange={setField('house_num')} /></div>
+                <div className="field"><label>Postcode</label>
+                  <input value={editForm.postcode} onChange={setField('postcode')} /></div>
+              </div>
+              <div className="form-row">
+                <div className="field"><label>Mobile</label>
+                  <input value={editForm.phone_mobile} onChange={setField('phone_mobile')} /></div>
+                <div className="field"><label>Home phone</label>
+                  <input value={editForm.phone_home} onChange={setField('phone_home')} /></div>
+                <div className="field"><label>Email</label>
+                  <input value={editForm.email} onChange={setField('email')} /></div>
+              </div>
+              <div className="detail-actions">
+                <button className="btn btn-primary btn-sm" type="submit" disabled={saving}>
+                  {saving ? <span className="spinner" /> : 'Save changes'}
+                </button>
+                <button className="btn btn-ghost btn-sm" type="button" onClick={() => setMode('view')}>Cancel</button>
+              </div>
+              {saveErr && <div className="alert alert-err" style={{ marginTop: '.75rem' }}>{(saveError as { error?: string }).error ?? 'Request failed'}</div>}
+              {saveResult && <div className="alert alert-ok" style={{ marginTop: '.75rem' }}>{saveResult.message}</div>}
+            </form>
+          )}
+
+          {mode === 'delete' && (
+            <>
+              <div className="alert alert-warn">
+                Permanently delete customer <strong>{detail ? parseInt(detail.customer_num, 10) : selectedId}</strong>?
+                This also removes all their policies and claims.
+              </div>
+              <div className="detail-actions">
+                <button className="btn btn-danger btn-sm" onClick={handleDelete} disabled={deleting}>
+                  {deleting ? <span className="spinner" /> : 'Confirm delete'}
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => setMode('view')}>Cancel</button>
+              </div>
+              {deleteErr && <div className="alert alert-err" style={{ marginTop: '.75rem' }}>{(deleteError as { error?: string }).error ?? 'Request failed'}</div>}
+            </>
           )}
         </div>
       )}
