@@ -69,12 +69,14 @@ export default function App() {
       </aside>
 
       <div className="content-area">
-        {tab === 'customers-browse' && <CustomerList />}
-        {tab === 'customers-new'    && <CustomerCreate />}
-        {tab === 'policies-browse'  && <PolicyList />}
-        {tab === 'policies-new'     && <PolicyCreate />}
-        {tab === 'claims-browse'    && <ClaimList />}
-        {tab === 'claims-new'       && <ClaimCreate />}
+        <div className="content-inner">
+          {tab === 'customers-browse' && <CustomerList />}
+          {tab === 'customers-new'    && <CustomerCreate />}
+          {tab === 'policies-browse'  && <PolicyList />}
+          {tab === 'policies-new'     && <PolicyCreate />}
+          {tab === 'claims-browse'    && <ClaimList />}
+          {tab === 'claims-new'       && <ClaimCreate />}
+        </div>
       </div>
     </>
   );

@@ -128,9 +128,15 @@ body { display: flex; min-height: 100vh; }
 .content-area {
   margin-left: var(--sidebar-w);
   flex: 1;
-  padding: 2rem 2rem 4rem;
   min-height: 100vh;
-  max-width: calc(960px + var(--sidebar-w));
+  padding: 2rem 1.5rem 4rem;
+  display: flex;
+  justify-content: center;
+}
+
+.content-inner {
+  width: 100%;
+  max-width: 960px;
 }
 
 /* ── Card ───────────────────────────────────────────────── */
