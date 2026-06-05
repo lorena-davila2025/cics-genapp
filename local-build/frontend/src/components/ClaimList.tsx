@@ -81,32 +81,32 @@ export default function ClaimList() {
 
       <form className="filter-section" onSubmit={handleFilter}>
         <div className="field">
-          <label>Claim #</label>
-          <input value={claimNumFilter} onChange={e => setClaimNumFilter(e.target.value)} placeholder="e.g. 5" />
+          <label htmlFor="claim-filter-num">Claim #</label>
+          <input id="claim-filter-num" value={claimNumFilter} onChange={e => setClaimNumFilter(e.target.value)} placeholder="e.g. 5" />
         </div>
         <div className="field">
-          <label>Policy #</label>
-          <input value={polInput} onChange={e => setPolInput(e.target.value)} placeholder="All policies" />
+          <label htmlFor="claim-filter-pol">Policy #</label>
+          <input id="claim-filter-pol" value={polInput} onChange={e => setPolInput(e.target.value)} placeholder="All policies" />
         </div>
         <div className="field">
-          <label>Date from</label>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+          <label htmlFor="claim-filter-date-from">Date from</label>
+          <input id="claim-filter-date-from" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
         </div>
         <div className="field">
-          <label>Date to</label>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+          <label htmlFor="claim-filter-date-to">Date to</label>
+          <input id="claim-filter-date-to" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
         </div>
         <div className="field">
-          <label>Cause contains</label>
-          <input value={causeFilter} onChange={e => setCauseFilter(e.target.value)} placeholder="e.g. fire" />
+          <label htmlFor="claim-filter-cause">Cause contains</label>
+          <input id="claim-filter-cause" value={causeFilter} onChange={e => setCauseFilter(e.target.value)} placeholder="e.g. fire" />
         </div>
         <div className="field">
-          <label>Amount from</label>
-          <input type="number" value={amountFrom} onChange={e => setAmountFrom(e.target.value)} placeholder="e.g. 1000" />
+          <label htmlFor="claim-filter-amount-from">Amount from</label>
+          <input id="claim-filter-amount-from" type="number" value={amountFrom} onChange={e => setAmountFrom(e.target.value)} placeholder="e.g. 1000" />
         </div>
         <div className="field">
-          <label>Amount to</label>
-          <input type="number" value={amountTo} onChange={e => setAmountTo(e.target.value)} placeholder="e.g. 5000" />
+          <label htmlFor="claim-filter-amount-to">Amount to</label>
+          <input id="claim-filter-amount-to" type="number" value={amountTo} onChange={e => setAmountTo(e.target.value)} placeholder="e.g. 5000" />
         </div>
         <div className="filter-actions">
           <button className="btn btn-secondary btn-sm" type="submit">Apply</button>

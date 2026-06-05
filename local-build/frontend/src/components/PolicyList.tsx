@@ -159,16 +159,16 @@ export default function PolicyList() {
 
       <form className="filter-section" onSubmit={handleFilter}>
         <div className="field">
-          <label>Policy #</label>
-          <input value={polNumFilter} onChange={e => setPolNumFilter(e.target.value)} placeholder="e.g. 12" />
+          <label htmlFor="pol-filter-num">Policy #</label>
+          <input id="pol-filter-num" value={polNumFilter} onChange={e => setPolNumFilter(e.target.value)} placeholder="e.g. 12" />
         </div>
         <div className="field">
-          <label>Customer #</label>
-          <input value={custInput} onChange={e => setCustInput(e.target.value)} placeholder="All customers" />
+          <label htmlFor="pol-filter-cust">Customer #</label>
+          <input id="pol-filter-cust" value={custInput} onChange={e => setCustInput(e.target.value)} placeholder="All customers" />
         </div>
         <div className="field">
-          <label>Policy type</label>
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as PolicyType | '')}>
+          <label htmlFor="pol-filter-type">Policy type</label>
+          <select id="pol-filter-type" value={typeFilter} onChange={e => setTypeFilter(e.target.value as PolicyType | '')}>
             <option value="">All types</option>
             {Object.entries(TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{k} — {v}</option>
@@ -176,24 +176,24 @@ export default function PolicyList() {
           </select>
         </div>
         <div className="field">
-          <label>Issue date from</label>
-          <input type="date" value={issueDateFrom} onChange={e => setIssueDateFrom(e.target.value)} />
+          <label htmlFor="pol-filter-issue-from">Issue date from</label>
+          <input id="pol-filter-issue-from" type="date" value={issueDateFrom} onChange={e => setIssueDateFrom(e.target.value)} />
         </div>
         <div className="field">
-          <label>Issue date to</label>
-          <input type="date" value={issueDateTo} onChange={e => setIssueDateTo(e.target.value)} />
+          <label htmlFor="pol-filter-issue-to">Issue date to</label>
+          <input id="pol-filter-issue-to" type="date" value={issueDateTo} onChange={e => setIssueDateTo(e.target.value)} />
         </div>
         <div className="field">
-          <label>Expiry date from</label>
-          <input type="date" value={expiryDateFrom} onChange={e => setExpiryDateFrom(e.target.value)} />
+          <label htmlFor="pol-filter-expiry-from">Expiry date from</label>
+          <input id="pol-filter-expiry-from" type="date" value={expiryDateFrom} onChange={e => setExpiryDateFrom(e.target.value)} />
         </div>
         <div className="field">
-          <label>Expiry date to</label>
-          <input type="date" value={expiryDateTo} onChange={e => setExpiryDateTo(e.target.value)} />
+          <label htmlFor="pol-filter-expiry-to">Expiry date to</label>
+          <input id="pol-filter-expiry-to" type="date" value={expiryDateTo} onChange={e => setExpiryDateTo(e.target.value)} />
         </div>
         <div className="field">
-          <label>Payment</label>
-          <input value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} placeholder="e.g. 500" />
+          <label htmlFor="pol-filter-payment">Payment</label>
+          <input id="pol-filter-payment" value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} placeholder="e.g. 500" />
         </div>
         <div className="filter-actions">
           <button className="btn btn-secondary btn-sm" type="submit">Apply</button>

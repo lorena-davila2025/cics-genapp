@@ -125,24 +125,24 @@ export default function CustomerList() {
 
       <div className="filter-section">
         <div className="field">
-          <label>Customer #</label>
-          <input value={custNumFilter} onChange={e => setCustNumFilter(e.target.value)} placeholder="e.g. 42" />
+          <label htmlFor="cust-filter-num">Customer #</label>
+          <input id="cust-filter-num" value={custNumFilter} onChange={e => setCustNumFilter(e.target.value)} placeholder="e.g. 42" />
         </div>
         <div className="field">
-          <label>Name</label>
-          <input value={nameFilter} onChange={e => setNameFilter(e.target.value)} placeholder="First or last name" />
+          <label htmlFor="cust-filter-name">Name</label>
+          <input id="cust-filter-name" value={nameFilter} onChange={e => setNameFilter(e.target.value)} placeholder="First or last name" />
         </div>
         <div className="field">
-          <label>Date of birth</label>
-          <input value={dobFilter} onChange={e => setDobFilter(e.target.value)} placeholder="e.g. 1980" />
+          <label htmlFor="cust-filter-dob">Date of birth</label>
+          <input id="cust-filter-dob" value={dobFilter} onChange={e => setDobFilter(e.target.value)} placeholder="e.g. 1980" />
         </div>
         <div className="field">
-          <label>Postcode</label>
-          <input value={postcodeFilter} onChange={e => setPostcodeFilter(e.target.value)} placeholder="e.g. SW1" />
+          <label htmlFor="cust-filter-postcode">Postcode</label>
+          <input id="cust-filter-postcode" value={postcodeFilter} onChange={e => setPostcodeFilter(e.target.value)} placeholder="e.g. SW1" />
         </div>
         <div className="field">
-          <label>Min policies</label>
-          <input type="number" min="0" value={minPolicies} onChange={e => setMinPolicies(e.target.value)} placeholder="e.g. 1" />
+          <label htmlFor="cust-filter-min-policies">Min policies</label>
+          <input id="cust-filter-min-policies" type="number" min="0" value={minPolicies} onChange={e => setMinPolicies(e.target.value)} placeholder="e.g. 1" />
         </div>
         {hasFilters && (
           <div className="filter-actions">
