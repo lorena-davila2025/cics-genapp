@@ -42,6 +42,11 @@ describe('PolicyList – table', () => {
 });
 
 describe('PolicyList – filters', () => {
+  it('Search button is always visible', () => {
+    render(<PolicyList />);
+    expect(screen.getByRole('button', { name: /^search$/i })).toBeInTheDocument();
+  });
+
   it('renders a filter field for every table column', () => {
     render(<PolicyList />);
     expect(screen.getByLabelText('Policy #')).toBeInTheDocument();

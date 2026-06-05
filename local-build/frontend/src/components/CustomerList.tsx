@@ -123,7 +123,7 @@ export default function CustomerList() {
         {rows && <span className="count">{filtered?.length ?? rows.length} of {rows.length}</span>}
       </div>
 
-      <div className="filter-section">
+      <form className="filter-section" onSubmit={e => e.preventDefault()}>
         <div className="field">
           <label htmlFor="cust-filter-num">Customer #</label>
           <input id="cust-filter-num" value={custNumFilter} onChange={e => setCustNumFilter(e.target.value)} placeholder="e.g. 42" />
@@ -144,12 +144,11 @@ export default function CustomerList() {
           <label htmlFor="cust-filter-min-policies">Min policies</label>
           <input id="cust-filter-min-policies" type="number" min="0" value={minPolicies} onChange={e => setMinPolicies(e.target.value)} placeholder="e.g. 1" />
         </div>
-        {hasFilters && (
-          <div className="filter-actions">
-            <button className="btn btn-ghost btn-sm" onClick={clearFilters}>Clear</button>
-          </div>
-        )}
-      </div>
+        <div className="filter-actions">
+          <button className="btn btn-secondary btn-sm" type="submit">Search</button>
+          {hasFilters && <button className="btn btn-ghost btn-sm" type="button" onClick={clearFilters}>Clear</button>}
+        </div>
+      </form>
 
       {isLoading && <div className="empty-state"><span className="spinner" /></div>}
       {filtered?.length === 0 && !isLoading && <div className="empty-state">No customers match the current filters.</div>}

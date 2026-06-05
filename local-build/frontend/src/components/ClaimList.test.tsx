@@ -42,6 +42,11 @@ describe('ClaimList – table', () => {
 });
 
 describe('ClaimList – filters', () => {
+  it('Search button is always visible', () => {
+    render(<ClaimList />);
+    expect(screen.getByRole('button', { name: /^search$/i })).toBeInTheDocument();
+  });
+
   it('renders a filter field for every table column', () => {
     render(<ClaimList />);
     expect(screen.getByLabelText('Claim #')).toBeInTheDocument();

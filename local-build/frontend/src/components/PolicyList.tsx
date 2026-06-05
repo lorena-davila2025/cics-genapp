@@ -196,7 +196,7 @@ export default function PolicyList() {
           <input id="pol-filter-payment" value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} placeholder="e.g. 500" />
         </div>
         <div className="filter-actions">
-          <button className="btn btn-secondary btn-sm" type="submit">Apply</button>
+          <button className="btn btn-secondary btn-sm" type="submit">Search</button>
           {hasAnyFilter && (
             <button className="btn btn-ghost btn-sm" type="button" onClick={clearFilters}>Clear</button>
           )}

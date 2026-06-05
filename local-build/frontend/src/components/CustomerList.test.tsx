@@ -92,6 +92,11 @@ describe('CustomerList – filters', () => {
     expect(screen.getByText(/1 of 3/i)).toBeInTheDocument();
   });
 
+  it('Search button is always visible', () => {
+    render(<CustomerList />);
+    expect(screen.getByRole('button', { name: /^search$/i })).toBeInTheDocument();
+  });
+
   it('shows Clear button when a filter is active and clears on click', async () => {
     render(<CustomerList />);
     await userEvent.type(screen.getByLabelText('Name'), 'alice');
