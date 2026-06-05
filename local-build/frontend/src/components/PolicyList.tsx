@@ -66,11 +66,13 @@ export default function PolicyList() {
   const [filterArg,  setFilterArg]  = useState<string | undefined>(undefined);
 
   // Client-side filters
+  const [polNumFilter,   setPolNumFilter]   = useState('');
   const [typeFilter,     setTypeFilter]     = useState<PolicyType | ''>('');
   const [issueDateFrom,  setIssueDateFrom]  = useState('');
   const [issueDateTo,    setIssueDateTo]    = useState('');
   const [expiryDateFrom, setExpiryDateFrom] = useState('');
   const [expiryDateTo,   setExpiryDateTo]   = useState('');
+  const [paymentFilter,  setPaymentFilter]  = useState('');
 
   // Selection + panel
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -91,11 +93,13 @@ export default function PolicyList() {
   function clearFilters() {
     setCustInput('');
     setFilterArg(undefined);
+    setPolNumFilter('');
     setTypeFilter('');
     setIssueDateFrom('');
     setIssueDateTo('');
     setExpiryDateFrom('');
     setExpiryDateTo('');
+    setPaymentFilter('');
     setSelectedKey(null);
   }
 
@@ -127,10 +131,11 @@ export default function PolicyList() {
     }
   }
 
-  const hasClientFilters = typeFilter || issueDateFrom || issueDateTo || expiryDateFrom || expiryDateTo;
+  const hasClientFilters = polNumFilter || typeFilter || issueDateFrom || issueDateTo || expiryDateFrom || expiryDateTo || paymentFilter;
   const hasAnyFilter = custInput || filterArg || hasClientFilters;
 
   const filtered = rows?.filter(p => {
+    if (polNumFilter.trim() && !p.policy_num.includes(polNumFilter.trim())) return false;
     if (typeFilter) {
       const code = (p.policy_type_code ?? p.policy_type.trim().charAt(0)) as PolicyType;
       if (code !== typeFilter) return false;
@@ -139,6 +144,7 @@ export default function PolicyList() {
     if (issueDateTo    && p.issue_date  > issueDateTo)    return false;
     if (expiryDateFrom && p.expiry_date < expiryDateFrom) return false;
     if (expiryDateTo   && p.expiry_date > expiryDateTo)   return false;
+    if (paymentFilter.trim() && !(p.payment || '').includes(paymentFilter.trim())) return false;
     return true;
   });
 
@@ -152,6 +158,10 @@ export default function PolicyList() {
       </div>
 
       <form className="filter-section" onSubmit={handleFilter}>
+        <div className="field">
+          <label>Policy #</label>
+          <input value={polNumFilter} onChange={e => setPolNumFilter(e.target.value)} placeholder="e.g. 12" />
+        </div>
         <div className="field">
           <label>Customer #</label>
           <input value={custInput} onChange={e => setCustInput(e.target.value)} placeholder="All customers" />
@@ -180,6 +190,10 @@ export default function PolicyList() {
         <div className="field">
           <label>Expiry date to</label>
           <input type="date" value={expiryDateTo} onChange={e => setExpiryDateTo(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Payment</label>
+          <input value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} placeholder="e.g. 500" />
         </div>
         <div className="filter-actions">
           <button className="btn btn-secondary btn-sm" type="submit">Apply</button>

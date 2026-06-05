@@ -21,9 +21,11 @@ type PanelMode = 'view' | 'edit' | 'delete';
 
 export default function CustomerList() {
   // Filters (all client-side — full list loads on mount)
-  const [nameFilter,     setNameFilter]     = useState('');
   const [custNumFilter,  setCustNumFilter]  = useState('');
+  const [nameFilter,     setNameFilter]     = useState('');
+  const [dobFilter,      setDobFilter]      = useState('');
   const [postcodeFilter, setPostcodeFilter] = useState('');
+  const [minPolicies,    setMinPolicies]    = useState('');
 
   // Selection + panel
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -87,20 +89,24 @@ export default function CustomerList() {
   }
 
   function clearFilters() {
-    setNameFilter('');
     setCustNumFilter('');
+    setNameFilter('');
+    setDobFilter('');
     setPostcodeFilter('');
+    setMinPolicies('');
   }
 
-  const hasFilters = nameFilter || custNumFilter || postcodeFilter;
+  const hasFilters = custNumFilter || nameFilter || dobFilter || postcodeFilter || minPolicies;
 
   const filtered = rows?.filter(c => {
+    if (custNumFilter.trim() && !c.customer_num.includes(custNumFilter.trim())) return false;
     if (nameFilter.trim()) {
       const q = nameFilter.trim().toLowerCase();
       if (!c.first_name.toLowerCase().includes(q) && !c.last_name.toLowerCase().includes(q)) return false;
     }
-    if (custNumFilter.trim() && !c.customer_num.includes(custNumFilter.trim())) return false;
+    if (dobFilter.trim() && !(c.dob || '').includes(dobFilter.trim())) return false;
     if (postcodeFilter.trim() && !(c.postcode || '').toLowerCase().includes(postcodeFilter.trim().toLowerCase())) return false;
+    if (minPolicies.trim() && parseInt(c.num_policies, 10) < parseInt(minPolicies, 10)) return false;
     return true;
   });
 
@@ -119,20 +125,28 @@ export default function CustomerList() {
 
       <div className="filter-section">
         <div className="field">
+          <label>Customer #</label>
+          <input value={custNumFilter} onChange={e => setCustNumFilter(e.target.value)} placeholder="e.g. 42" />
+        </div>
+        <div className="field">
           <label>Name</label>
           <input value={nameFilter} onChange={e => setNameFilter(e.target.value)} placeholder="First or last name" />
         </div>
         <div className="field">
-          <label>Customer #</label>
-          <input value={custNumFilter} onChange={e => setCustNumFilter(e.target.value)} placeholder="e.g. 42" />
+          <label>Date of birth</label>
+          <input value={dobFilter} onChange={e => setDobFilter(e.target.value)} placeholder="e.g. 1980" />
         </div>
         <div className="field">
           <label>Postcode</label>
           <input value={postcodeFilter} onChange={e => setPostcodeFilter(e.target.value)} placeholder="e.g. SW1" />
         </div>
+        <div className="field">
+          <label>Min policies</label>
+          <input type="number" min="0" value={minPolicies} onChange={e => setMinPolicies(e.target.value)} placeholder="e.g. 1" />
+        </div>
         {hasFilters && (
           <div className="filter-actions">
-            <button className="btn btn-ghost btn-sm" onClick={clearFilters}>Clear filters</button>
+            <button className="btn btn-ghost btn-sm" onClick={clearFilters}>Clear</button>
           </div>
         )}
       </div>

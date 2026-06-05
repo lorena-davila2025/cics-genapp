@@ -9,9 +9,12 @@ export default function ClaimList() {
   const [filterArg,  setFilterArg]  = useState<string | undefined>(undefined);
 
   // Client-side filters
-  const [dateFrom,    setDateFrom]    = useState('');
-  const [dateTo,      setDateTo]      = useState('');
-  const [causeFilter, setCauseFilter] = useState('');
+  const [claimNumFilter, setClaimNumFilter] = useState('');
+  const [dateFrom,       setDateFrom]       = useState('');
+  const [dateTo,         setDateTo]         = useState('');
+  const [causeFilter,    setCauseFilter]    = useState('');
+  const [amountFrom,     setAmountFrom]     = useState('');
+  const [amountTo,       setAmountTo]       = useState('');
 
   // Selection + panel
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -32,9 +35,12 @@ export default function ClaimList() {
   function clearFilters() {
     setPolInput('');
     setFilterArg(undefined);
+    setClaimNumFilter('');
     setDateFrom('');
     setDateTo('');
     setCauseFilter('');
+    setAmountFrom('');
+    setAmountTo('');
     setSelectedId(null);
   }
 
@@ -54,14 +60,15 @@ export default function ClaimList() {
     }
   }
 
-  const hasAnyFilter = polInput || filterArg || dateFrom || dateTo || causeFilter;
+  const hasAnyFilter = polInput || filterArg || claimNumFilter || dateFrom || dateTo || causeFilter || amountFrom || amountTo;
 
   const filtered = rows?.filter(c => {
-    if (dateFrom    && c.claim_date < dateFrom) return false;
-    if (dateTo      && c.claim_date > dateTo)   return false;
-    if (causeFilter.trim()) {
-      if (!c.cause.toLowerCase().includes(causeFilter.trim().toLowerCase())) return false;
-    }
+    if (claimNumFilter.trim() && !c.claim_num.includes(claimNumFilter.trim())) return false;
+    if (dateFrom && c.claim_date < dateFrom) return false;
+    if (dateTo   && c.claim_date > dateTo)   return false;
+    if (causeFilter.trim() && !c.cause.toLowerCase().includes(causeFilter.trim().toLowerCase())) return false;
+    if (amountFrom.trim() && parseFloat(c.value) < parseFloat(amountFrom)) return false;
+    if (amountTo.trim()   && parseFloat(c.value) > parseFloat(amountTo))   return false;
     return true;
   });
 
@@ -74,12 +81,12 @@ export default function ClaimList() {
 
       <form className="filter-section" onSubmit={handleFilter}>
         <div className="field">
-          <label>Policy #</label>
-          <input value={polInput} onChange={e => setPolInput(e.target.value)} placeholder="All policies" />
+          <label>Claim #</label>
+          <input value={claimNumFilter} onChange={e => setClaimNumFilter(e.target.value)} placeholder="e.g. 5" />
         </div>
         <div className="field">
-          <label>Cause contains</label>
-          <input value={causeFilter} onChange={e => setCauseFilter(e.target.value)} placeholder="e.g. fire" />
+          <label>Policy #</label>
+          <input value={polInput} onChange={e => setPolInput(e.target.value)} placeholder="All policies" />
         </div>
         <div className="field">
           <label>Date from</label>
@@ -88,6 +95,18 @@ export default function ClaimList() {
         <div className="field">
           <label>Date to</label>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Cause contains</label>
+          <input value={causeFilter} onChange={e => setCauseFilter(e.target.value)} placeholder="e.g. fire" />
+        </div>
+        <div className="field">
+          <label>Amount from</label>
+          <input type="number" value={amountFrom} onChange={e => setAmountFrom(e.target.value)} placeholder="e.g. 1000" />
+        </div>
+        <div className="field">
+          <label>Amount to</label>
+          <input type="number" value={amountTo} onChange={e => setAmountTo(e.target.value)} placeholder="e.g. 5000" />
         </div>
         <div className="filter-actions">
           <button className="btn btn-secondary btn-sm" type="submit">Apply</button>
