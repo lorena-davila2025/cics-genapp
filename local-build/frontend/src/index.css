@@ -48,6 +48,7 @@ body { display: flex; }
 
 .app-container {
   display: flex;
+  width: -webkit-fill-available;
 }
 
 .sidebar {
@@ -176,7 +177,6 @@ body { display: flex; }
 /* ── Filter section ─────────────────────────────────────── */
 .filter-section {
   display: flex;
-  flex-wrap: wrap;
   gap: .6rem .75rem;
   align-items: flex-end;
   margin-bottom: 1.25rem;
@@ -184,6 +184,10 @@ body { display: flex; }
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+
+  @media (max-width: 1400px) {
+    flex-wrap: wrap;
+  }
 }
 .filter-section .field {
   flex: 1 1 140px;
