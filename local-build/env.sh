@@ -7,7 +7,7 @@ export PGHOST=localhost
 export PGPORT=5432
 export PGDATABASE=genapp
 export PGUSER=genapp
-export PGPASSWORD=qwerty0512
+export PGPASSWORD=Futur3!R3ady
 export PGOPTIONS='--search_path=genapp'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
