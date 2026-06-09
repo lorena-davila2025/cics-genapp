@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: genapp-api
+    runtime: docker
+    # Path to the Dockerfile, relative to the repo root.
+    # Build context is automatically the repo root (required so the
+    # Dockerfile can COPY both base/src and local-build/).
+    dockerfilePath: local-build/api/Dockerfile
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3002"
+      # PostgreSQL connection — fill these in from your Neon dashboard
+      # after creating the database (Step 6).
+      - key: PGHOST
+        sync: false
+      - key: PGPORT
+        sync: false
+      - key: PGDATABASE
+        sync: false
+      - key: PGUSER
+        sync: false
+      - key: PGPASSWORD
+        sync: false
+      - key: PGOPTIONS
+        value: "--search_path=genapp"
+      - key: COB_LIBRARY_PATH
+        value: /app/bin
+      - key: COB_DYNAMIC_CALLS
+        value: "YES"

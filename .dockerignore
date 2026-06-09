@@ -1,0 +1,25 @@
+# Compiled COBOL artifacts (macOS binaries, Docker rebuilds these for Linux)
+local-build/bin/
+local-build/src/
+local-build/gen/
+
+# Node dependencies (Docker installs its own)
+local-build/api/node_modules/
+local-build/frontend/node_modules/
+
+# Frontend build output
+local-build/frontend/dist/
+
+# macOS shared libraries (not usable on Linux)
+**/*.dylib
+
+# Git, editor, OS noise
+.git/
+.vscode/
+**/.DS_Store
+**/*.swp
+
+# Credential files
+.env
+local-build/.env
+local-build/env.sh

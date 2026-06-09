@@ -14,7 +14,7 @@ interface UpdateCustomerArg { id: string; data: CustomerInput }
 
 export const genappApi = createApi({
   reducerPath: 'genappApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_URL ?? '/api' }),
   tagTypes: ['Customer', 'Policy', 'Claim'],
   endpoints: (builder) => ({
 
