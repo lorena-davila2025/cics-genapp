@@ -246,19 +246,20 @@ def patch_line(logical_line):
         cm = re.search(r'COMMAREA\s*\(\s*(\S+)\s*\)', s, re.IGNORECASE)
         prog    = pm.group(1).upper() if pm else 'UNKNOWN'
         commarea = cm.group(1) if cm else 'DFHCOMMAREA'
+        period = '.' if s.rstrip().endswith('.') else ''
 
         # LGACDB02 is a real program we compile — call it directly
         if prog == 'LGACDB02':
             return (f'{indent}CALL \'LGACDB02\' USING BY REFERENCE\n'
-                    f'{indent}    {commarea} EIBCALEN')
+                    f'{indent}    {commarea} EIBCALEN{period}')
 
         # LGSTSQ -> stub
         if prog == 'LGSTSQ':
-            return f'{indent}CALL \'LGSTSQ-STUB\' USING {commarea}'
+            return f'{indent}CALL \'LGSTSQ-STUB\' USING {commarea}{period}'
 
         # View programs and anything else -> stub
         stub = f'{prog}-STUB'
-        return f'{indent}CALL \'{stub}\' USING {commarea}'
+        return f'{indent}CALL \'{stub}\' USING {commarea}{period}'
 
     return s
 
