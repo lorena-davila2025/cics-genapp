@@ -3,8 +3,8 @@ base/.DS_Store
 .DS_Store
 
 # credentials â never commit
-.env
-**/.env
+*.env
+**/env.sh
 
 # local-build generated artifacts
 local-build/src/

@@ -9,6 +9,9 @@ const pool = new Pool({
     user:     process.env.PGUSER     || 'genapp',
     password: process.env.PGPASSWORD || 'qwerty0512',
     options:  '--search_path=genapp',
+    ssl:      process.env.PGHOST && process.env.PGHOST !== 'localhost'
+                ? { rejectUnauthorized: false }
+                : false,
 });
 
 module.exports = pool;
