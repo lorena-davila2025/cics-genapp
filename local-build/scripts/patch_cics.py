@@ -324,12 +324,12 @@ def main():
     raw_text = _relocate_declare_cursors(raw_text)
 
     # GnuCOBOL with -std=ibm treats END-PROGRAM as a reserved scope terminator.
-    # When it appears as a user-defined paragraph label (e.g. "       END-PROGRAM.")
-    # the compiler rejects it. Rename to END-PROGRAM-PARA. so it compiles cleanly.
+    # Rename every occurrence (paragraph label and PERFORM/GO TO references) to
+    # END-PROGRAM-PARA so the generated CBL compiles cleanly.
     raw_text = re.sub(
-        r'^(\s+)(END-PROGRAM)\.',
-        r'\1\2-PARA.',
-        raw_text, flags=re.IGNORECASE | re.MULTILINE)
+        r'\bEND-PROGRAM\b(?!-PARA)',
+        'END-PROGRAM-PARA',
+        raw_text, flags=re.IGNORECASE)
 
     # Apply SQL-level patches on the whole text first
     raw_text = apply_sql_patches(raw_text)
