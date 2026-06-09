@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Home          from './components/Home.tsx';
+import About         from './components/About.tsx';
 import CustomerList   from './components/CustomerList.tsx';
 import CustomerCreate from './components/CustomerCreate.tsx';
 import PolicyList     from './components/PolicyList.tsx';
@@ -7,11 +9,19 @@ import ClaimList      from './components/ClaimList.tsx';
 import ClaimCreate    from './components/ClaimCreate.tsx';
 
 type TabId =
+  | 'home' | 'about'
   | 'customers-browse' | 'customers-new'
   | 'policies-browse'  | 'policies-new'
   | 'claims-browse'    | 'claims-new';
 
 const NAV: { section: string; items: { id: TabId; label: string; icon: string }[] }[] = [
+  {
+    section: '',
+    items: [
+      { id: 'home',  label: 'Home',  icon: '⌂' },
+      { id: 'about', label: 'About', icon: 'ℹ' },
+    ],
+  },
   {
     section: 'Customers',
     items: [
@@ -36,7 +46,7 @@ const NAV: { section: string; items: { id: TabId; label: string; icon: string }[
 ];
 
 export default function App() {
-  const [tab, setTab] = useState<TabId>('customers-browse');
+  const [tab, setTab] = useState<TabId>('home');
 
   return (
     <>
@@ -47,8 +57,8 @@ export default function App() {
         </div>
 
         {NAV.map(({ section, items }) => (
-          <div key={section} className="sidebar-section">
-            <p className="sidebar-section-label">{section}</p>
+          <div key={section || '__top'} className="sidebar-section">
+            {section && <p className="sidebar-section-label">{section}</p>}
             {items.map(item => (
               <button
                 key={item.id}
@@ -64,12 +74,14 @@ export default function App() {
 
         <div className="sidebar-footer">
           GenApp v1.0<br />
-          Local build
+          IBM CICS Sample — Modernised
         </div>
       </aside>
 
       <div className="content-area">
         <div className="content-inner">
+          {tab === 'home'             && <Home onNavigate={(t) => setTab(t as TabId)} />}
+          {tab === 'about'            && <About />}
           {tab === 'customers-browse' && <CustomerList />}
           {tab === 'customers-new'    && <CustomerCreate />}
           {tab === 'policies-browse'  && <PolicyList />}
