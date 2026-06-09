@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # into plain GnuCOBOL dynamic SQL calls.
 WORKDIR /build/ocesql
 RUN git clone --depth 1 https://github.com/opensourcecobol/open-cobol-ESQL . \
+    && autoreconf -fi \
     && ./configure \
     && make -j"$(nproc)" \
     && make install \
