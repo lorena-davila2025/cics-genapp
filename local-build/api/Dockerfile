@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       git \
       python3 \
       pkg-config \
+      automake \
+      autoconf \
+      libtool \
       ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
