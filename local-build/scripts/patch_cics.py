@@ -194,8 +194,11 @@ def patch_line(logical_line):
     s = re.sub(r'DFHRESP\s*\(\s*NORMAL\s*\)', '0', s, flags=re.IGNORECASE)
 
     # 2. EXEC CICS RETURN
+    # Preserve a trailing period so GnuCOBOL 3.1.x doesn't reject the
+    # paragraph label that follows as "syntax error, unexpected Identifier".
     if re.search(r'EXEC\s+CICS\s+RETURN\b', s, re.IGNORECASE):
-        return f'{indent}GOBACK'
+        period = '.' if s.rstrip().endswith('.') else ''
+        return f'{indent}GOBACK{period}'
 
     # 3. EXEC CICS SYNCPOINT ROLLBACK
     if re.search(r'EXEC\s+CICS\s+SYNCPOINT\s+ROLLBACK', s, re.IGNORECASE):
@@ -458,16 +461,16 @@ def main():
     commit_stmt = 'EXEC SQL COMMIT END-EXEC'
     if 'WS-COMMAREA' in result:
         result = re.sub(
-            r'^(\s+)GOBACK\s*$',
+            r'^(\s+)GOBACK(\.?)\s*$',
             lambda m: (m.group(1) + commit_stmt + '\n' +
                        m.group(1) + 'MOVE WS-COMMAREA TO DFHCOMMAREA\n' +
-                       m.group(1) + 'GOBACK'),
+                       m.group(1) + 'GOBACK' + m.group(2)),
             result, flags=re.MULTILINE)
     else:
         result = re.sub(
-            r'^(\s+)GOBACK\s*$',
+            r'^(\s+)GOBACK(\.?)\s*$',
             lambda m: (m.group(1) + commit_stmt + '\n' +
-                       m.group(1) + 'GOBACK'),
+                       m.group(1) + 'GOBACK' + m.group(2)),
             result, flags=re.MULTILINE)
 
     with open(sys.argv[2], 'w') as f:
