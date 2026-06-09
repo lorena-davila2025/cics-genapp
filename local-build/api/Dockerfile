@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       automake \
       autoconf \
       libtool \
+      flex \
+      bison \
       ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
