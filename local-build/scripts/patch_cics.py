@@ -35,7 +35,7 @@ def transform_linkage_for_esql(text):
     """
     # --- detect what LINKAGE contains ---
     linkage_m = re.search(
-        r'(LINKAGE\s+SECTION\..+?\n)(?=[ \t]*PROCEDURE\s+DIVISION)',
+        r'([ \t]*LINKAGE\s+SECTION\..+?\n)(?=[ \t]*PROCEDURE\s+DIVISION)',
         text, re.IGNORECASE | re.DOTALL)
     if not linkage_m:
         return text
