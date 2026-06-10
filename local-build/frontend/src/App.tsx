@@ -74,7 +74,7 @@ export default function App() {
 
         <div className="sidebar-footer">
           GenApp v1.0<br />
-          IBM CICS Sample — Modernised
+          IBM CICS Sample — Modernized
         </div>
       </aside>
 

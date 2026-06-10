@@ -34,7 +34,7 @@ function PolicyDetail({ data }: { data: Policy }) {
     ],
     M: [
       ['Make', data.make], ['Model', data.model], ['Value', data.value],
-      ['Reg number', data.reg_number], ['Colour', data.colour], ['CC', data.cc],
+      ['Reg number', data.reg_number], ['Color', data.colour], ['CC', data.cc],
       ['Manufactured', data.manufactured], ['Premium', data.premium], ['Accidents', data.accidents],
     ],
     C: [

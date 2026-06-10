@@ -65,7 +65,7 @@ function MotorFields({ form, set }: { form: PolicyForm; set: SetField }) {
           <input value={form.reg_number ?? ''} onChange={set('reg_number')} placeholder="e.g. AB12 CDE" /></div>
       </div>
       <div className="form-row">
-        <div className="field"><label>Colour</label>
+        <div className="field"><label>Color</label>
           <input value={form.colour ?? ''} onChange={set('colour')} placeholder="e.g. Blue" /></div>
         <div className="field"><label>CC</label>
           <input value={form.cc ?? ''} onChange={set('cc')} placeholder="e.g. 1800" /></div>

@@ -5,7 +5,7 @@ export default function Home({ onNavigate }: { onNavigate: NavAction }) {
     <div className="home">
       {/* Hero */}
       <div className="home-hero">
-        <div className="home-hero-eyebrow">IBM CICS GenApp — Modernised</div>
+        <div className="home-hero-eyebrow">IBM CICS GenApp — Modernized</div>
         <h1 className="home-hero-title">Insurance Management System</h1>
         <p className="home-hero-sub">
           A cloud-native port of IBM's mainframe sample application. The original

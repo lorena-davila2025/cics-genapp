@@ -4,7 +4,7 @@ export default function About() {
       <div className="about-header">
         <h2>About GenApp</h2>
         <p className="about-lead">
-          This application is a modernised port of IBM's open-source{' '}
+          This application is a modernized port of IBM's open-source{' '}
           <strong>CICS GenApp</strong> sample — a reference application that
           IBM ships to demonstrate how business applications run on z/OS mainframes.
         </p>
@@ -106,25 +106,42 @@ export default function About() {
           <div className="arch-layer">
             <div className="arch-label">Browser</div>
             <div className="arch-box accent">React + Redux Toolkit Query</div>
-            <div className="arch-sublabel">Netlify CDN</div>
+            <div className="arch-sublabel">Deployed to Netlify CDN</div>
+            <p className="arch-desc">
+              TypeScript + Vite bundle deployed as static files on Netlify's global CDN.
+              RTK Query manages data fetching, caching, and cache invalidation.
+            </p>
           </div>
           <div className="arch-arrow">↓ HTTPS / REST</div>
           <div className="arch-layer">
             <div className="arch-label">API</div>
             <div className="arch-box">Node.js · Express</div>
-            <div className="arch-sublabel">Render (Docker)</div>
+            <div className="arch-sublabel">Deployed on Render (Docker container)</div>
+            <p className="arch-desc">
+              Containerised Express server hosted on Render. Validates incoming requests,
+              spawns compiled COBOL processes via Node's <code>child_process</code>,
+              and serialises results as JSON.
+            </p>
           </div>
-          <div className="arch-arrow">↓ spawn</div>
+          <div className="arch-arrow">↓ process spawn</div>
           <div className="arch-layer">
             <div className="arch-label">Business Logic</div>
             <div className="arch-box cobol">GnuCOBOL binaries (original IBM source)</div>
-            <div className="arch-sublabel">compiled with ocesql preprocessing</div>
+            <div className="arch-sublabel">Compiled inside the Render Docker image</div>
+            <p className="arch-desc">
+              Original IBM COBOL source — CICS verbs stripped by a Python patch script,
+              then compiled with GnuCOBOL and the ocesql preprocessor for embedded SQL support.
+            </p>
           </div>
           <div className="arch-arrow">↓ libpq / ocesql</div>
           <div className="arch-layer">
             <div className="arch-label">Database</div>
             <div className="arch-box db">PostgreSQL — genapp schema</div>
-            <div className="arch-sublabel">Neon serverless</div>
+            <div className="arch-sublabel">Hosted on Neon (serverless PostgreSQL)</div>
+            <p className="arch-desc">
+              Neon serverless PostgreSQL. Tables mirror the original VSAM record layouts,
+              preserving the IBM field names and fixed-width sizes.
+            </p>
           </div>
         </div>
       </div>

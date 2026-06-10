@@ -273,14 +273,18 @@ STUB_PARAGRAPHS = """
 
 """
 
+END_PROGRAM_PARA_STUB = """
+      *================================================================*
+      *  END-PROGRAM-PARA stub injected by patch_cics.py               *
+      *================================================================*
+       END-PROGRAM-PARA.
+           GOBACK.
+
+"""
+
 
 def inject_stubs(text):
-    """Insert stub paragraphs just before the final full-stop of
-    WRITE-ERROR-MESSAGE so PERFORM STUB-ASKTIME resolves."""
-    # Find the end of WRITE-ERROR-MESSAGE paragraph (before next para or end)
-    pattern = r'([ \t]+EXIT\.[ \t]*\n)([ \t]*\n)*(\s*IDENTIFICATION DIVISION|\s*\Z)'
-    # simpler: insert before the last EXIT. that closes WRITE-ERROR-MESSAGE
-    # We look for '       EXIT.' near end of file
+    """Insert stub paragraphs just before the final EXIT. near end of file."""
     lines = text.split('\n')
     # find last occurrence of '       EXIT.' which closes WRITE-ERROR-MESSAGE
     insert_at = None
@@ -289,7 +293,14 @@ def inject_stubs(text):
             insert_at = i
             break
     if insert_at is not None:
-        stub_lines = STUB_PARAGRAPHS.split('\n')
+        extra = STUB_PARAGRAPHS
+        # If END-PROGRAM-PARA is referenced but not defined as a paragraph
+        # label, inject a GOBACK stub so PERFORM/GO TO END-PROGRAM-PARA works.
+        has_ref = bool(re.search(r'\bEND-PROGRAM-PARA\b', text))
+        has_def = bool(re.search(r'^\s+END-PROGRAM-PARA\.\s*$', text, re.MULTILINE))
+        if has_ref and not has_def:
+            extra += END_PROGRAM_PARA_STUB
+        stub_lines = extra.split('\n')
         lines = lines[:insert_at] + stub_lines + lines[insert_at:]
     return '\n'.join(lines)
 
