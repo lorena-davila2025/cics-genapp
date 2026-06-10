@@ -224,6 +224,11 @@ cd cics-genapp
 
 ### 2. Create the database
 
+> **New to PostgreSQL on Mac/Linux?**
+> See [Quick guide to setting up PostgreSQL on Mac via CLI with Homebrew](https://dev.to/lorena_dvila_5ab5ef35ec6/1-quick-guide-to-setting-up-postgresql-on-mac-via-cli-with-homebrew-3548)
+> for a step-by-step walkthrough of installing PostgreSQL, creating a user,
+> and assigning database permissions before running the commands below.
+
 ```bash
 createdb genapp
 psql genapp < local-build/db/genapp_postgres.sql
