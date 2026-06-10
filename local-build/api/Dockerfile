@@ -67,17 +67,8 @@ RUN make all \
 
 # The Makefile targets *.dylib (macOS naming) but on Linux cobc honours
 # the -o flag verbatim, so files are genuinely named *.dylib with ELF
-# content. Add *.so symlinks for GnuCOBOL's module loader.
-# COB_LOAD_CASE=UPPER (set at runtime) makes GnuCOBOL look for uppercase
-# filenames AND uppercase symbols. Modules compiled with -std=ibm export
-# uppercase symbols (e.g. LGACDB01), so we need both lowercase and
-# uppercase .so symlinks to cover the loader's search.
-RUN cd bin && for f in *.dylib; do \
-      base="${f%.dylib}"; \
-      ln -sf "$f" "${base}.so"; \
-      upper=$(echo "$base" | tr '[:lower:]' '[:upper:]'); \
-      [ "$upper" != "$base" ] && ln -sf "$f" "${upper}.so" || true; \
-    done
+# content. Add lowercase *.so symlinks as a baseline.
+RUN cd bin && for f in *.dylib; do ln -sf "$f" "${f%.dylib}.so"; done
 
 # =============================================================
 #  Stage 2 — Node 22 runtime
@@ -101,6 +92,16 @@ RUN ldconfig
 WORKDIR /app
 COPY --from=cobol-builder /build/genapp/local-build/bin ./bin
 
+# Modules compiled with -std=ibm export uppercase symbols (e.g. LGACDB01).
+# COB_LOAD_CASE=UPPER (set in ENV below) makes the GnuCOBOL runtime search
+# for uppercase filenames, so add LGACDB01.so -> lgacdb01.dylib symlinks.
+# This RUN is in the runtime stage so it is never skipped by build cache.
+RUN cd /app/bin && for f in *.dylib; do \
+      base="${f%.dylib}"; \
+      upper=$(echo "$base" | tr '[:lower:]' '[:upper:]'); \
+      [ "$upper" != "$base" ] && ln -sf "$f" "${upper}.so" || true; \
+    done
+
 # Install Node API dependencies
 RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY local-build/api/package.json   ./api/package.json
@@ -116,7 +117,8 @@ COPY local-build/api/utils     ./utils
 ENV NODE_ENV=production \
     PORT=3002 \
     COB_LIBRARY_PATH=/app/bin \
-    COB_DYNAMIC_CALLS=YES
+    COB_DYNAMIC_CALLS=YES \
+    COB_LOAD_CASE=UPPER
 
 EXPOSE 3002
 
