@@ -118,7 +118,7 @@ ENV NODE_ENV=production \
     PORT=3002 \
     COB_LIBRARY_PATH=/app/bin \
     COB_DYNAMIC_CALLS=YES \
-    COB_LOAD_CASE=UPPER
+    COB_PRE_LOAD=libocesql
 
 EXPOSE 3002
 
