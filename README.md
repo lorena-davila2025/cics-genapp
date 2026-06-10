@@ -5,6 +5,8 @@
 > locally on macOS/Linux using **GnuCOBOL + ocesql + PostgreSQL**, with a REST
 > API (Express) and a React frontend — no mainframe required.
 
+https://cics-genapp-react-migration.netlify.app/
+
 ---
 
 ## Table of contents
@@ -352,6 +354,17 @@ cics-genapp/
     └── test/
         └── testdb.cbl           # Smoke-test COBOL runner
 ```
+
+### Last version:
+
+<img width="1915" height="926" alt="image" src="https://github.com/user-attachments/assets/5d4ebe06-d541-4ca6-b9c7-03e9b4e4faf5" />
+
+<img width="1913" height="928" alt="image" src="https://github.com/user-attachments/assets/8274cb89-30ff-4ec2-a585-240b1573c4bb" />
+
+<img width="3456" height="1944" alt="GenApp" src="https://github.com/user-attachments/assets/7720195f-0158-49dd-8d81-42b157422a77" />
+
+
+### Version 0.1:
 
 <img width="1718" height="896" alt="Screenshot 2026-06-01 at 5 39 45 PM" src="https://github.com/user-attachments/assets/b4d71caa-3195-4fa3-879e-655184ef44d0" />
 
