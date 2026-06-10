@@ -130,9 +130,20 @@ export default function About() {
       </div>
 
       <div className="about-footer">
-        Source: <a href="https://github.com/cicsdev/cics-genapp" target="_blank" rel="noreferrer">
+        Original source:{' '}
+        <a href="https://github.com/cicsdev/cics-genapp" target="_blank" rel="noreferrer">
           github.com/cicsdev/cics-genapp
-        </a> — © IBM Corp. 2011, 2020. Migration by lorena-davila2025.
+        </a>{' '}
+        — © IBM Corp. 2011, 2020.
+        <br />
+        Migration &amp; cloud port:{' '}
+        <a href="https://github.com/lorena-davila2025/cics-genapp" target="_blank" rel="noreferrer">
+          github.com/lorena-davila2025/cics-genapp
+        </a>{' '}
+        by{' '}
+        <a href="https://github.com/lorena-davila2025" target="_blank" rel="noreferrer">
+          @lorena-davila2025
+        </a>
       </div>
     </div>
   );
