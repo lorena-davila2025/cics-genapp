@@ -20,8 +20,9 @@ function runCobol(executable, envVars = {}) {
         {
             env: {
                 ...process.env,
-                COB_LIBRARY_PATH,
+                COB_LIBRARY_PATH: `${COB_LIBRARY_PATH}:/usr/local/lib`,
                 COB_DYNAMIC_CALLS: 'YES',
+                LD_LIBRARY_PATH: `${COB_LIBRARY_PATH}:/usr/local/lib`,
                 PGHOST:     process.env.PGHOST     || 'localhost',
                 PGPORT:     process.env.PGPORT     || '5432',
                 PGDATABASE: process.env.PGDATABASE || 'genapp',

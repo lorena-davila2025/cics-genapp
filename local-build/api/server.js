@@ -45,15 +45,26 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// ─── Temporary debug: diagnose COBOL module loading ────────────────────────
+// ─── Temporary debug: test COBOL runner directly ───────────────────────────
 app.get('/debug/bin', (_req, res) => {
-    const { execSync } = require('child_process');
+    const { execSync, spawnSync } = require('child_process');
     const run = (cmd) => { try { return execSync(cmd).toString(); } catch (e) { return e.stderr?.toString() || e.message; } };
+    const cobEnv = {
+        COB_LIBRARY_PATH: '/app/bin:/usr/local/lib',
+        COB_DYNAMIC_CALLS: 'YES',
+        LD_LIBRARY_PATH: '/app/bin:/usr/local/lib',
+        PGHOST: process.env.PGHOST, PGUSER: process.env.PGUSER,
+        PGPASSWORD: process.env.PGPASSWORD, PGDATABASE: process.env.PGDATABASE,
+        PGOPTIONS: '--search_path=genapp',
+        FIRSTNAME: 'Debug', LASTNAME: 'Test', DOB: '1990-01-01',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+    };
+    const r = spawnSync('/app/bin/run_cust_add', [], { env: cobEnv, timeout: 10000 });
     res.json({
-        ldd_lgacdb01:  run('ldd /app/bin/lgacdb01.dylib 2>&1'),
-        ldd_runner:    run('ldd /app/bin/run_cust_add 2>&1'),
-        ldconfig_pq:   run('ldconfig -p | grep -E "libpq|ocesql" 2>&1'),
-        env_cob:       { COB_LIBRARY_PATH: process.env.COB_LIBRARY_PATH, COB_DYNAMIC_CALLS: process.env.COB_DYNAMIC_CALLS },
+        stdout:      (r.stdout || '').toString(),
+        stderr:      (r.stderr || '').toString(),
+        exitCode:    r.status,
+        ldconfig_pq: run('ldconfig -p | grep -E "libpq|ocesql"'),
     });
 });
 
