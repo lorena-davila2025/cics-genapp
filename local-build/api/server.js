@@ -53,6 +53,7 @@ app.get('/debug/bin', (_req, res) => {
         ...process.env,
         COB_LIBRARY_PATH: '/app/bin:/usr/local/lib',
         COB_DYNAMIC_CALLS: 'YES',
+        COB_LOAD_CASE: 'UPPER',
         LD_LIBRARY_PATH: '/app/bin:/usr/local/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu',
         PGHOST: process.env.PGHOST, PGUSER: process.env.PGUSER,
         PGPASSWORD: process.env.PGPASSWORD, PGDATABASE: process.env.PGDATABASE,
