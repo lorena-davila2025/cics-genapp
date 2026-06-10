@@ -32,6 +32,7 @@ const writeLimiter = rateLimit({
 });
 
 // ─── Middleware ────────────────────────────────────────────────────────────
+app.set('trust proxy', 1); // Render sits behind a load balancer
 app.use(cors());
 app.use(express.json());
 
@@ -42,6 +43,18 @@ app.get('/health', (_req, res) => {
         service: 'genapp-api',
         timestamp: new Date().toISOString(),
     });
+});
+
+// ─── Temporary debug: list bin directory ───────────────────────────────────
+app.get('/debug/bin', (_req, res) => {
+    const { execSync } = require('child_process');
+    try {
+        const files = execSync('ls -la /app/bin/').toString();
+        const ldd   = execSync('ldd /app/bin/run_cust_add 2>&1 || true').toString();
+        res.json({ files, ldd });
+    } catch (err) {
+        res.json({ error: err.message });
+    }
 });
 
 // ─── Route-level rate limiting (GET=read limit, mutations=write limit) ─────
