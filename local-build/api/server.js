@@ -3,6 +3,7 @@
 const express    = require('express');
 const cors       = require('cors');
 const path       = require('path');
+const { rateLimit } = require('express-rate-limit');
 
 const customersRouter = require('./routes/customers');
 const policiesRouter  = require('./routes/policies');
@@ -10,6 +11,25 @@ const claimsRouter    = require('./routes/claims');
 
 const app  = express();
 const PORT = process.env.PORT || 3002;
+
+// ─── Rate limiters ─────────────────────────────────────────────────────────
+// Read endpoints: 120 requests / minute per IP
+const readLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please slow down.' },
+});
+
+// Write endpoints: 20 requests / minute per IP
+const writeLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Write rate limit exceeded. Try again in a minute.' },
+});
 
 // ─── Middleware ────────────────────────────────────────────────────────────
 app.use(cors());
@@ -24,10 +44,14 @@ app.get('/health', (_req, res) => {
     });
 });
 
+// ─── Route-level rate limiting (GET=read limit, mutations=write limit) ─────
+const applyLimiter = (req, res, next) =>
+    req.method === 'GET' ? readLimiter(req, res, next) : writeLimiter(req, res, next);
+
 // ─── Routes ────────────────────────────────────────────────────────────────
-app.use('/api/customers', customersRouter);
-app.use('/api/policies',  policiesRouter);
-app.use('/api/claims',    claimsRouter);
+app.use('/api/customers', applyLimiter, customersRouter);
+app.use('/api/policies',  applyLimiter, policiesRouter);
+app.use('/api/claims',    applyLimiter, claimsRouter);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.use((_req, res) => {
