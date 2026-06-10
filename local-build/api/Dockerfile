@@ -67,8 +67,17 @@ RUN make all \
 
 # The Makefile targets *.dylib (macOS naming) but on Linux cobc honours
 # the -o flag verbatim, so files are genuinely named *.dylib with ELF
-# content. Add *.so symlinks as a safety net for GnuCOBOL's module loader.
-RUN cd bin && for f in *.dylib; do ln -sf "$f" "${f%.dylib}.so"; done
+# content. Add *.so symlinks for GnuCOBOL's module loader.
+# COB_LOAD_CASE=UPPER (set at runtime) makes GnuCOBOL look for uppercase
+# filenames AND uppercase symbols. Modules compiled with -std=ibm export
+# uppercase symbols (e.g. LGACDB01), so we need both lowercase and
+# uppercase .so symlinks to cover the loader's search.
+RUN cd bin && for f in *.dylib; do \
+      base="${f%.dylib}"; \
+      ln -sf "$f" "${base}.so"; \
+      upper=$(echo "$base" | tr '[:lower:]' '[:upper:]'); \
+      [ "$upper" != "$base" ] && ln -sf "$f" "${upper}.so" || true; \
+    done
 
 # =============================================================
 #  Stage 2 — Node 22 runtime
