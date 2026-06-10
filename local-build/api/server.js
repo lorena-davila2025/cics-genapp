@@ -45,16 +45,16 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// ─── Temporary debug: list bin directory ───────────────────────────────────
+// ─── Temporary debug: diagnose COBOL module loading ────────────────────────
 app.get('/debug/bin', (_req, res) => {
     const { execSync } = require('child_process');
-    try {
-        const files = execSync('ls -la /app/bin/').toString();
-        const ldd   = execSync('ldd /app/bin/run_cust_add 2>&1 || true').toString();
-        res.json({ files, ldd });
-    } catch (err) {
-        res.json({ error: err.message });
-    }
+    const run = (cmd) => { try { return execSync(cmd).toString(); } catch (e) { return e.stderr?.toString() || e.message; } };
+    res.json({
+        ldd_lgacdb01:  run('ldd /app/bin/lgacdb01.dylib 2>&1'),
+        ldd_runner:    run('ldd /app/bin/run_cust_add 2>&1'),
+        ldconfig_pq:   run('ldconfig -p | grep -E "libpq|ocesql" 2>&1'),
+        env_cob:       { COB_LIBRARY_PATH: process.env.COB_LIBRARY_PATH, COB_DYNAMIC_CALLS: process.env.COB_DYNAMIC_CALLS },
+    });
 });
 
 // ─── Route-level rate limiting (GET=read limit, mutations=write limit) ─────
