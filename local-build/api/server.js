@@ -45,26 +45,30 @@ app.get('/health', (_req, res) => {
     });
 });
 
-// ─── Temporary debug: test COBOL runner directly ───────────────────────────
+// ─── Temporary debug: diagnose COBOL module loading ────────────────────────
 app.get('/debug/bin', (_req, res) => {
     const { execSync, spawnSync } = require('child_process');
-    const run = (cmd) => { try { return execSync(cmd).toString(); } catch (e) { return e.stderr?.toString() || e.message; } };
+    const run = (cmd) => { try { return execSync(cmd).toString().trim(); } catch (e) { return (e.stderr?.toString() || e.message).trim(); } };
     const cobEnv = {
+        ...process.env,
         COB_LIBRARY_PATH: '/app/bin:/usr/local/lib',
         COB_DYNAMIC_CALLS: 'YES',
-        LD_LIBRARY_PATH: '/app/bin:/usr/local/lib',
+        LD_LIBRARY_PATH: '/app/bin:/usr/local/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu',
         PGHOST: process.env.PGHOST, PGUSER: process.env.PGUSER,
         PGPASSWORD: process.env.PGPASSWORD, PGDATABASE: process.env.PGDATABASE,
         PGOPTIONS: '--search_path=genapp',
         FIRSTNAME: 'Debug', LASTNAME: 'Test', DOB: '1990-01-01',
-        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     };
     const r = spawnSync('/app/bin/run_cust_add', [], { env: cobEnv, timeout: 10000 });
     res.json({
-        stdout:      (r.stdout || '').toString(),
-        stderr:      (r.stderr || '').toString(),
-        exitCode:    r.status,
-        ldconfig_pq: run('ldconfig -p | grep -E "libpq|ocesql"'),
+        stdout:       (r.stdout || '').toString(),
+        stderr:       (r.stderr || '').toString(),
+        exitCode:     r.status,
+        ls_bin:       run('ls -la /app/bin/ | head -30'),
+        file_so:      run('file /app/bin/lgacdb01.so /app/bin/lgacdb01.dylib 2>&1'),
+        nm_symbols:   run('nm -D /app/bin/lgacdb01.so 2>&1 | grep -i lgacdb01'),
+        cobc_version: run('cobc --version 2>&1 | head -1'),
+        ldconfig_pq:  run('ldconfig -p | grep -E "libpq|ocesql|libcob"'),
     });
 });
 
